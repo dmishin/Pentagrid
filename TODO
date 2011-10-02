@@ -1,0 +1,27 @@
+TODO:
+
+[+] Export image as PNG.
+[+] Implement simple save and load for field. 
+[] "Black-White" rules, that have B0 record.
+   Normally, such rule can no be implemented, since they would produce infinite many alive cells after the first iteration.
+   However, if rule has no BA, and no SA records, then after 2 iterations, all the cells that has became alive, will become dead again.
+   Such rules can be replaced by 2 rules, applied sequentially,  
+   	first rule: outputs inverted
+   	second rule: inputs inverted.
+   	
+   	I.E. replace F -> F -> F ...
+   	with F.I -> I.F -> F.I ... 
+   	
+   	where F is rule transfer function and I - inversion operation.
+[] Export animation
+
+[+] Implement offset matrix normalization (to prevent accumulating errors)
+[+] Implement limiting view range
+[-] Memoization of the transform getter: without much success
+
+[] Create more decent GUI: buttons and menus instead of hotkeys
+[] Add help.
+
+[] Save rule with field
+[] Export and import field in some well-defined format
+[] Better file chooser dialogs: default file types and better title

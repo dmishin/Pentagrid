@@ -1,0 +1,44 @@
+package org.ratson.pentagrid;
+
+import java.util.LinkedList;
+
+/**Some utility functions, I don't know where to put to.*/
+public class Util {
+	/**Create random pentagonal field*/
+	public static Path[] randomField( int radius, double p) {
+		LinkedList<Path> cells = new LinkedList<Path>();
+		Path root = Path.getRoot();
+		for( int r = 0 ; r < radius; ++r ){
+			Path cur = root;
+			do{
+				if (Math.random() <= p ){
+					cells.add( cur );
+				}
+				cur = cur.left();
+			}while( ! cur.equals(root) );
+			root = root.child(1);
+		}
+		
+		//convert result to array
+		Path[] rval = new Path[ cells.size() ];
+		cells.toArray( rval );
+		return rval;
+	}
+	/**Given a field and cell, returns new field with one cell toggled*/
+	public static Path[] toggleCell( Path[] cells, Path cell ){
+		LinkedList<Path> new_cells = new LinkedList<Path>();
+		boolean found = false;
+		for (int i = 0; i < cells.length; i++) {
+			if ( ! cells[i].equals(cell) )
+				new_cells.add( cells[i] );
+			else{
+				found  = true;
+			}
+		}
+		if (! found )
+			new_cells.add( cell );
+		Path[] rval = new Path[ new_cells.size()];
+		new_cells.toArray( rval );
+		return rval;
+	}
+}
