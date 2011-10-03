@@ -12,7 +12,6 @@ import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.Path;
 import org.ratson.pentagrid.PathNavigation;
 import org.ratson.pentagrid.Rule;
-import org.ratson.util.LazyResult;
 
 class CellRecordWithCounter extends CellRecord implements Serializable{
 	public int deadAgeCounter=0;

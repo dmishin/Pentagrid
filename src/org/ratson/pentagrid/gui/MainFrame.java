@@ -38,7 +38,6 @@ import org.ratson.pentagrid.Rule;
 import org.ratson.pentagrid.RuleSyntaxException;
 import org.ratson.pentagrid.Util;
 import org.ratson.pentagrid.fields.SimpleMapField;
-import org.ratson.util.LazyResult;
 
 public class MainFrame extends JFrame implements NotificationReceiver {
 	

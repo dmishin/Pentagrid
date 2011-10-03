@@ -10,7 +10,6 @@ import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.Path;
 import org.ratson.pentagrid.PathNavigation;
 import org.ratson.pentagrid.Rule;
-import org.ratson.util.LazyResult;
 
 /**Field, storing only living cells in one single map.*/
 public final class SimpleMapField extends Field{
