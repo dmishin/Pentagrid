@@ -3,8 +3,6 @@ package org.ratson.pentagrid;
 import java.util.Arrays;
 
 import org.ratson.pentagrid.fields.ArrayField;
-import org.ratson.pentagrid.fields.DoubleMapField;
-import org.ratson.pentagrid.fields.ExcessiveField;
 import org.ratson.pentagrid.fields.SimpleMapField;
 
 public class Benchmark {
@@ -46,8 +44,6 @@ public class Benchmark {
 		int steps = 100;
 		
 		doBenchmark( "Afld", makeTest( new ArrayField(), r, tries, steps), nBench );			
-		doBenchmark( "Efld", makeTest( new ExcessiveField(), r, tries, steps), nBench );			
-		doBenchmark( "2fld", makeTest( new DoubleMapField(), r, tries, steps), nBench );			
 		doBenchmark( "SimpleMap", makeTest( new SimpleMapField(), r, tries, steps), nBench );			
 	}
 }
