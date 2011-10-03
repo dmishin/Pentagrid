@@ -5,7 +5,6 @@ import java.util.List;
 import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.Path;
 import org.ratson.pentagrid.Rule;
-import org.ratson.util.LazyResult;
 
 /**Thread, that runs in background and continuously evaluates the field, when requested*/
 public class EvaluationRunner extends  Thread {
