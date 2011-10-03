@@ -32,6 +32,7 @@ Description:
 	   s - save field data
 	   l - load field data
 	   e - export current view as PNG image
+	   t - edit settings (for now, only "Export image size" option is working)
 	   
 Rules:
     Automation is 2-state (1 and 0), and totalistic. The latter means that the next state of the cell depends only on sum of states of its neighbores.
