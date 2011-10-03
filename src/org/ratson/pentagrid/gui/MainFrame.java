@@ -47,6 +47,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	private EvaluationRunner evaluationThread=null;
 	private int randomFieldRadius = 7;
 	private double randomFillPercent = 0.5;
+	private Settings settings = new Settings();
 	
 	private void createUI(){
 		 panel = new PoincarePanel( world );
@@ -82,6 +83,9 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				case 'l':
 					doLoadField();
 					break;
+				case 't':
+					doEditSettings();
+					break;
 				}
 			}
 			
@@ -116,6 +120,11 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 					System.err.println("Error:"+err.getMessage());
 				}
 			}});
+	}
+
+	protected void doEditSettings() {
+		SettingsDialog sd = new SettingsDialog(settings);
+		sd.showDialog();
 	}
 
 	protected void toggleRunning() {
@@ -216,7 +225,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
             if ( ! file.getName().contains("."))
             	file = new File( file.getParentFile(), file.getName()+".png");
             try {
-				ImageIO.write( panel.exportImage(new Dimension(512, 512)), "PNG", file);
+				ImageIO.write( panel.exportImage(new Dimension(settings.exportImageSize, settings.exportImageSize)), "PNG", file);
 			} catch (IOException err) {
 				JOptionPane.showMessageDialog(this, err.getMessage(), "Can not save file", JOptionPane.ERROR_MESSAGE);
 			}
