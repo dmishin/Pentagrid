@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.Path;
-import org.ratson.pentagrid.Rule;
+import org.ratson.pentagrid.TotalisticRule;
 
 /**Thread, that runs in background and continuously evaluates the field, when requested*/
 public class EvaluationRunner extends  Thread {
@@ -14,9 +14,9 @@ public class EvaluationRunner extends  Thread {
 	private int limitPopulation = 50000; //stop evaluation, when reached this limit
 	volatile boolean stopRequested = false;
 	private NotificationReceiver receiver=null;
-	private Rule rule;
+	private TotalisticRule rule;
 	
-	public EvaluationRunner( Field cells, Rule rul, NotificationReceiver r ) {
+	public EvaluationRunner( Field cells, TotalisticRule rul, NotificationReceiver r ) {
 		super("Evaluator");
 		this.cells = cells;
 		rule = rul;

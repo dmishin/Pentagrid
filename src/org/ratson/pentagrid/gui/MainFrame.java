@@ -31,18 +31,20 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.ratson.pentagrid.DayNightRule;
 import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.Path;
 import org.ratson.pentagrid.PathNavigation;
 import org.ratson.pentagrid.Rule;
 import org.ratson.pentagrid.RuleSyntaxException;
+import org.ratson.pentagrid.TotalisticRule;
 import org.ratson.pentagrid.Util;
 import org.ratson.pentagrid.fields.SimpleMapField;
 
 public class MainFrame extends JFrame implements NotificationReceiver {
 	
 	private Field world = new SimpleMapField();
-	private Rule rule = new Rule();
+	private TotalisticRule rule = new Rule();
 	private PoincarePanel panel;
 	private EvaluationRunner evaluationThread=null;
 	private int randomFieldRadius = 7;
@@ -135,7 +137,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	}
 
 	protected void doChangeRule() {
-		String sRule = JOptionPane.showInputDialog(this, "Enter the rule in format B3/S23", rule.toString());
+		String sRule = JOptionPane.showInputDialog(this, "Enter the rule in format B3/S23", rule.getCode());
 		if ( sRule != null ){
 			try{
 				setRule( sRule );
@@ -146,7 +148,20 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	}
 	public void setRule( String sRule ) throws RuleSyntaxException{
 		stopEvaluation();
-		rule = Rule.parseRule(sRule);
+		Rule parsed = Rule.parseRule(sRule);
+		if (parsed.isVacuumStable() ){
+			//normal rule
+			rule = parsed;
+		}else{
+			if ( parsed.isValidDayNight() ){
+				DayNightRule converted = new DayNightRule(parsed);
+				System.out.println( "Converting Day/Night rule "+parsed+" to the pair of stable rules:"+ converted);
+				assert( converted.isValidRule() );
+				rule = converted;
+			}else
+				throw new RuleSyntaxException("Rule "+parsed+" is not supported: it has B0 and SA. Try inverted rule:"+parsed.invertBoth());
+		}
+		rule.resetState();
 		System.out.println( "Rule set to "+rule);
 	}
 	
@@ -162,6 +177,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	}
 	
 	public MainFrame() {
+		super("Hyperbolic CA simulator");
 		createUI();
 		addHandlers();
 	}

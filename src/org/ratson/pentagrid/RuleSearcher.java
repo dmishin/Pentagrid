@@ -54,7 +54,7 @@ public class RuleSearcher {
 		Arrays.sort( cells, PathHashComparator.getInst());
 	}
 	
-	Result tryRule( Rule r, int fieldSize ){
+	Result tryRule( TotalisticRule r, int fieldSize ){
 		Path root = Path.getRoot();
 		double p = 0.5;
 		
@@ -105,7 +105,7 @@ public class RuleSearcher {
 		return maxLen > fieldSize + 5;
 	}
 
-	Result[] tryRuleTimes( Rule r, int steps ){
+	Result[] tryRuleTimes( TotalisticRule r, int steps ){
 		LinkedList<Result> res = new LinkedList<Result>();
 		
 		Result r0 = tryRule( r, 3 );//try rule on small radius to filter out exponentials quickly
@@ -125,7 +125,7 @@ public class RuleSearcher {
 		return rval;
 	}
 
-	private int detectCycle( Field field, Rule rule) {
+	private int detectCycle( Field field, TotalisticRule rule) {
 		Path[] original = field.getAliveCellsArray();
 		Path[] current = original;
 		int populationLimit = original.length * 10;
@@ -158,7 +158,7 @@ public class RuleSearcher {
 	
 	public void searchAllRules(){
 		for( int ruleIndex = 0; ruleIndex < (1<<19); ++ ruleIndex ){
-			Rule r = Rule.fromIndex(ruleIndex);
+			TotalisticRule r = Rule.fromIndex(ruleIndex);
 			Result[] res = tryRuleTimes(r, 20);
 			//if ( isInterestingReslut(res) )
 				System.out.println( "Rule:"+r+" " + Arrays.toString(res));

@@ -9,7 +9,7 @@ import java.util.Map.Entry;
 import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.Path;
 import org.ratson.pentagrid.PathNavigation;
-import org.ratson.pentagrid.Rule;
+import org.ratson.pentagrid.TotalisticRule;
 
 /**Field, storing only living cells in one single map.*/
 public final class SimpleMapField extends Field{
@@ -42,7 +42,7 @@ public final class SimpleMapField extends Field{
 			}
 		}
 	}
-	public synchronized void evaluate( Rule r ){
+	public synchronized void evaluate( TotalisticRule r ){
 		calculateSums();
 		//First process all cells in the old array
 		for( Iterator<CellRecord> iRec = data.values().iterator(); iRec.hasNext(); ){
@@ -67,6 +67,7 @@ public final class SimpleMapField extends Field{
 			}
 		}
 		newCells.clear();
+		r.nextIteration();//for the state-changing rules, update the state.
 	}
 	
 	public synchronized Path[] getAliveCellsArray(){

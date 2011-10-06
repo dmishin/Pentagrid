@@ -23,7 +23,7 @@ public class Benchmark {
 		System.out.println("Sorted:"+Arrays.toString(times));
 	}
 	
-	private static Runnable makeTest( final Field field, final Rule r, final int tries, final int steps ){
+	private static Runnable makeTest( final Field field, final TotalisticRule r, final int tries, final int steps ){
 		return new Runnable(){ 
 			@Override
 			public void run(){
@@ -39,7 +39,7 @@ public class Benchmark {
 
 	public static void main(String[] args) throws RuleSyntaxException {
 		int nBench = 5;
-		Rule r = Rule.parseRule("B3S235");
+		TotalisticRule r = Rule.parseRule("B3S235");
 		int tries = 10;
 		int steps = 100;
 		
