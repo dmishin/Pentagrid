@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Rule {
+public class Rule implements TotalisticRule {
 
 	private boolean[] born = new boolean[11];
 	private boolean[] live = new boolean[11];
@@ -38,14 +38,20 @@ public class Rule {
 		Rule rval = new Rule( 
 				parseRule_str2intArray(sBorn),
 				parseRule_str2intArray(sAlive) );
-		if ( rval.born[0] )
-			throw new RuleSyntaxException("Cell with 0 neighbores can't born");
 		return rval;
+	}
+	/**Returns True, if vacuum (empty field) is stable under this rule*/
+	public boolean isVacuumStable(){
+		return born[0] == false;
+	}
+	/**Rturns True, i this rule is actuallt a Day/Night rule, when both vacuum and inverted vacuum are not stable*/
+	public boolean isValidDayNight(){
+		return (born[0] == true) && (live[10] == false);
 	}
 	//Pentagrid rule is described by the 19 bits of information.
 	// 9 bits for born (0 is forbidden)
 	// 10 bits for stay.
-	public static Rule fromIndex( int idx ){
+	public static TotalisticRule fromIndex( int idx ){
 		assert( idx >= 0 && idx < 1<<19 );
 		Rule r = new Rule();
 		r.born[0] = false;
@@ -76,6 +82,9 @@ public class Rule {
 		return rval;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.ratson.pentagrid.TotalisticRule#nextState(int, int)
+	 */
 	public int nextState(int prevState, int numNeighbores) {
 		switch (prevState){
 		case 1:
@@ -100,4 +109,30 @@ public class Rule {
 		}
 		return rval.toString();
 	}
+	/**Create new rule, that is equivalent to applying the original rule to the inverted field*/
+	public Rule invertInputs(){
+		Rule rval = new Rule();
+		for( int i = 0; i < 11; ++i){
+			//Important: born->live, live->born; it is not a mistake.
+			rval.born[10-i] = live[i];
+			rval.live[10-i] = born[i]; 
+		}
+		return rval;
+	}
+	/**Create new rule, that is equivalent to applying the original rule and inverting the result*/
+	public Rule invertOutput(){
+		Rule rval = new Rule();
+		for( int i = 0; i < 11; ++i){
+			rval.born[i] = ! born[i];
+			rval.live[i] = ! live[i]; 
+		}
+		return rval;
+	}
+	/**Equivalent to the original rule, working in the inverted world*/
+	public Rule invertBoth(){
+		return invertInputs().invertOutput();
+	}
+	public void nextIteration() {}		//Doing nothing. Simple rules are not state-dependent
+	public void resetState() {}
+	public String getCode(){return toString();}
 }

@@ -26,7 +26,7 @@ public class PoincarePanel extends JComponent {
 	private Field field = null;
 	Shape cellsShape = null;
 	public boolean antiAlias = false;
-	public boolean showPopulation=true;
+	public boolean showPopulation=false;
 	public boolean showGrid = true;
 	private Shape gridShape = null;
 	private GridPainter gridDrawer = new GridPainter(4);

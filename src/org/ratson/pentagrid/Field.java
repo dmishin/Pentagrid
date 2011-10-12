@@ -26,7 +26,7 @@ public abstract class Field implements Serializable{
 	/**Returns array of all cells with nonzero state*/
 	public abstract Iterable<Path> getAliveCells();
 	/**Evaluate world, using this rule*/
-	public abstract void evaluate( Rule r );	
+	public abstract void evaluate( TotalisticRule r );	
 	/**how many cells there are. For some fields, can be very slow.*/
 	public abstract int population();
 	/**returns cell state*/

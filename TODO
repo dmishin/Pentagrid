@@ -2,7 +2,7 @@ TODO:
 
 [+] Export image as PNG.
 [+] Implement simple save and load for field. 
-[] "Black-White" rules, that have B0 record.
+[+] "Day-Night" rules, that have B0 record.
    Normally, such rule can no be implemented, since they would produce infinite many alive cells after the first iteration.
    However, if rule has no BA, and no SA records, then after 2 iterations, all the cells that has became alive, will become dead again.
    Such rules can be replaced by 2 rules, applied sequentially,  
@@ -20,7 +20,10 @@ TODO:
 [-] Memoization of the transform getter: without much success
 
 [] Create more decent GUI: buttons and menus instead of hotkeys
-[] Add help.
+[+] Settings dialog: done, but very primitive
+[] Add more settigns
+[] Make settings persistent
+[] Add help (now only README available)
 
 [] Save rule with field
 [] Export and import field in some well-defined format

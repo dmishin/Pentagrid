@@ -1,5 +1,6 @@
 package org.ratson.pentagrid.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
@@ -21,32 +22,40 @@ import java.util.zip.GZIPOutputStream;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.ratson.pentagrid.DayNightRule;
 import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.Path;
 import org.ratson.pentagrid.PathNavigation;
 import org.ratson.pentagrid.Rule;
 import org.ratson.pentagrid.RuleSyntaxException;
+import org.ratson.pentagrid.TotalisticRule;
 import org.ratson.pentagrid.Util;
 import org.ratson.pentagrid.fields.SimpleMapField;
 
 public class MainFrame extends JFrame implements NotificationReceiver {
 	
 	private Field world = new SimpleMapField();
-	private Rule rule = new Rule();
+	private TotalisticRule rule = new Rule();
 	private PoincarePanel panel;
 	private EvaluationRunner evaluationThread=null;
 	private Settings settings = new Settings();
-	
+	private JLabel lblFieldInfo;
 	private void createUI(){
 		 panel = new PoincarePanel( world );
+		 lblFieldInfo =  new JLabel();
 		 getContentPane().add( panel );
+		 getContentPane().add( lblFieldInfo, BorderLayout.NORTH );
 	}
-
+	private void updateFieldInfo(){
+		String infoStr = String.format("Population:%d Rule:%s", world.population(), rule);
+		lblFieldInfo.setText( infoStr );
+	}
 	private void addHandlers(){
 		addKeyListener(new KeyAdapter() {
 			@Override
@@ -55,13 +64,16 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				case  ' ':
 					if ( evaluationThread == null){
 						world.evaluate( rule );
+						updateFieldInfo();
 						panel.rebuildCells();
 					}
 					break;
 				case 'r':
+					rule.resetState();
 					setCells( Util.randomField( settings.randomFieldRadius, settings.randomFillPercent ) );
 					break;
 				case 'd':
+					rule.resetState();
 					setCells( new Path[0] );
 					break;
 				case 'x':
@@ -131,7 +143,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	}
 
 	protected void doChangeRule() {
-		String sRule = JOptionPane.showInputDialog(this, "Enter the rule in format B3/S23", rule.toString());
+		String sRule = JOptionPane.showInputDialog(this, "Enter the rule in format B3/S23", rule.getCode());
 		if ( sRule != null ){
 			try{
 				setRule( sRule );
@@ -142,7 +154,21 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	}
 	public void setRule( String sRule ) throws RuleSyntaxException{
 		stopEvaluation();
-		rule = Rule.parseRule(sRule);
+		Rule parsed = Rule.parseRule(sRule);
+		if (parsed.isVacuumStable() ){
+			//normal rule
+			rule = parsed;
+		}else{
+			if ( parsed.isValidDayNight() ){
+				DayNightRule converted = new DayNightRule(parsed);
+				System.out.println( "Converting Day/Night rule "+parsed+" to the pair of stable rules:"+ converted);
+				assert( converted.isValidRule() );
+				rule = converted;
+			}else
+				throw new RuleSyntaxException("Rule "+parsed+" is not supported: it has B0 and SA. Try inverted rule:"+parsed.invertBoth());
+		}
+		rule.resetState();
+		updateFieldInfo();
 		System.out.println( "Rule set to "+rule);
 	}
 	
@@ -154,10 +180,12 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		}
 		panel.rebuildCells();
 		world.setCells( cells );
+		updateFieldInfo();
 		if (wasRunning) startEvaluation();
 	}
 	
 	public MainFrame() {
+		super("Hyperbolic CA simulator");
 		createUI();
 		addHandlers();
 	}
@@ -200,6 +228,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				@Override
 				public void run() {
 					panel.rebuildCells();
+					updateFieldInfo();
 				}
 			});
 		}else{
@@ -280,5 +309,6 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		stopEvaluation();
 		world = newWorld;
 		panel.setField( newWorld );
+		updateFieldInfo();
 	}
 }

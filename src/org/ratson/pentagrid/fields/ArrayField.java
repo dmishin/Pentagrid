@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.Path;
 import org.ratson.pentagrid.PathNavigation;
-import org.ratson.pentagrid.Rule;
+import org.ratson.pentagrid.TotalisticRule;
 
 /**Record, used to store neighbores count*/
 final class NeighborhoodRecord implements Serializable{
@@ -26,8 +26,9 @@ public final class ArrayField extends Field{
 	private Path[] aliveCells = new Path[0];
 
 	@Override
-	public synchronized void evaluate(Rule r) {
+	public synchronized void evaluate(TotalisticRule r) {
 		aliveCells = evaluate(aliveCells, r);
+		r.nextIteration();//for the state-changing rules, update the state.
 	}
 
 	@Override
@@ -48,7 +49,7 @@ public final class ArrayField extends Field{
 		aliveCells = newCells;
 	}
 	/**Calculate next step*/
-	private Path[] evaluate( Path[] cells, Rule rule ){
+	private Path[] evaluate( Path[] cells, TotalisticRule rule ){
 		Map<Path, NeighborhoodRecord> withNeighbores = new HashMap<Path, NeighborhoodRecord>( ); //hash map is much (x3) faster in this task
 		
 		/*Fill initial state, without neighbores*/
