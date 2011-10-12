@@ -1,5 +1,6 @@
 package org.ratson.pentagrid.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
@@ -26,6 +27,7 @@ import javax.imageio.ImageIO;
 import javax.sound.midi.SysexMessage;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
@@ -50,12 +52,17 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	private int randomFieldRadius = 7;
 	private double randomFillPercent = 0.5;
 	private Settings settings = new Settings();
-	
+	private JLabel lblFieldInfo;
 	private void createUI(){
 		 panel = new PoincarePanel( world );
+		 lblFieldInfo =  new JLabel();
 		 getContentPane().add( panel );
+		 getContentPane().add( lblFieldInfo, BorderLayout.NORTH );
 	}
-
+	private void updateFieldInfo(){
+		String infoStr = String.format("Population:%d Rule:%s", world.population(), rule);
+		lblFieldInfo.setText( infoStr );
+	}
 	private void addHandlers(){
 		addKeyListener(new KeyAdapter() {
 			@Override
@@ -64,13 +71,16 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				case  ' ':
 					if ( evaluationThread == null){
 						world.evaluate( rule );
+						updateFieldInfo();
 						panel.rebuildCells();
 					}
 					break;
 				case 'r':
+					rule.resetState();
 					setCells( Util.randomField( randomFieldRadius, randomFillPercent ) );
 					break;
 				case 'd':
+					rule.resetState();
 					setCells( new Path[0] );
 					break;
 				case 'x':
@@ -162,6 +172,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				throw new RuleSyntaxException("Rule "+parsed+" is not supported: it has B0 and SA. Try inverted rule:"+parsed.invertBoth());
 		}
 		rule.resetState();
+		updateFieldInfo();
 		System.out.println( "Rule set to "+rule);
 	}
 	
@@ -173,6 +184,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		}
 		panel.rebuildCells();
 		world.setCells( cells );
+		updateFieldInfo();
 		if (wasRunning) startEvaluation();
 	}
 	
@@ -220,6 +232,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				@Override
 				public void run() {
 					panel.rebuildCells();
+					updateFieldInfo();
 				}
 			});
 		}else{
@@ -298,5 +311,6 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		stopEvaluation();
 		world = newWorld;
 		panel.setField( newWorld );
+		updateFieldInfo();
 	}
 }

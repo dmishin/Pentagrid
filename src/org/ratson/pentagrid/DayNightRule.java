@@ -2,7 +2,8 @@ package org.ratson.pentagrid;
 
 public class DayNightRule implements TotalisticRule {
 
-	private Rule[] subRules = null;
+	private Rule baseRule;
+	private Rule[] subRules;
 	private int state = 0;
 	
 	@Override
@@ -11,6 +12,8 @@ public class DayNightRule implements TotalisticRule {
 	}
 	
 	public DayNightRule( Rule baseRule ){
+		assert baseRule.isValidDayNight();
+		this.baseRule = baseRule;
 		subRules = new Rule[]{ 
 				baseRule.invertOutput(),
 				baseRule.invertInputs() };
@@ -23,7 +26,7 @@ public class DayNightRule implements TotalisticRule {
 	
 	@Override
 	public String toString() {
-		return "DayNight{"+subRules[0]+"; "+subRules[1]+"}";
+		return "DayNight{"+baseRule+"} " + ( state==0? "NORM" : "INV" ); 
 	}
 
 	public void resetState() {
@@ -32,5 +35,5 @@ public class DayNightRule implements TotalisticRule {
 	public boolean isValidRule(){
 		return subRules[0].isVacuumStable() && subRules[1].isVacuumStable();
 	}
-	public String getCode(){ return subRules[0].invertOutput().getCode(); };
+	public String getCode(){ return baseRule.getCode(); };
 }
