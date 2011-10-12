@@ -26,7 +26,7 @@ public class DayNightRule implements TotalisticRule {
 	
 	@Override
 	public String toString() {
-		return "DayNight{"+baseRule+"} " + ( state==0? "NORM" : "INV" ); 
+		return "DayNight{"+baseRule+"} " + ( state==0? "NORM" : "INV" ) + "="+subRules[state];  
 	}
 
 	public void resetState() {
