@@ -22,6 +22,8 @@ import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import java.awt.event.ActionListener;
+import javax.swing.JCheckBox;
+import javax.swing.SwingConstants;
 
 public class SettingsDialog extends JDialog {
 
@@ -47,6 +49,9 @@ public class SettingsDialog extends JDialog {
 		}
 	};
 	private Settings settings=null;
+	private JTextField fldRandomAreaSize;
+	private JTextField fldRandomFillPercent;
+	private JCheckBox chckbxAntiAliasExport;
 
 	/**
 	 * Launch the application.
@@ -66,6 +71,11 @@ public class SettingsDialog extends JDialog {
 	protected void readValues() throws Exception {
 		try{
 			settings.exportImageSize = Integer.parseInt( fldExportSize.getText() );
+			settings.exportAntiAlias = chckbxAntiAliasExport.isEnabled();
+			settings.randomFieldRadius = Integer.parseInt( fldRandomAreaSize.getText() );
+			if (settings.randomFieldRadius < 0 ) throw new Exception( "Size can not be < 0" );
+			if (settings.randomFieldRadius > 20 ) throw new Exception( "Size can not be > 20" );
+			settings.randomFillPercent = Math.min( 100, Math.max( 0, Integer.parseInt(fldRandomAreaSize.getText() )));
 		}catch( NumberFormatException e ) {throw new Exception( "Bd number format in export image size" );}
 		if ( settings.exportImageSize <=0) throw new Exception( "Image size too small" );
 		if ( settings.exportImageSize >= 4096) throw new Exception( "Image size too big" );
@@ -73,6 +83,9 @@ public class SettingsDialog extends JDialog {
 	
 	protected void writeValues() {
 		fldExportSize.setText( String.valueOf(settings.exportImageSize));
+		chckbxAntiAliasExport.setEnabled( settings.exportAntiAlias );
+		fldRandomAreaSize.setText(String.valueOf(settings.randomFieldRadius));
+		fldRandomFillPercent.setText(String.valueOf( (int)(settings.randomFillPercent*100) ));
 	}
 
 	/**
@@ -81,11 +94,59 @@ public class SettingsDialog extends JDialog {
 	public SettingsDialog( Settings s ) {
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setModal(true);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 450, 378);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+		{
+			JPanel panel = new JPanel();
+			panel.setBorder(new TitledBorder(null, "Field", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+			contentPanel.add(panel);
+			GridBagLayout gbl_panel = new GridBagLayout();
+			gbl_panel.columnWidths = new int[]{0, 0, 0};
+			gbl_panel.rowHeights = new int[]{0, 0, 0};
+			gbl_panel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+			gbl_panel.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+			panel.setLayout(gbl_panel);
+			{
+				JLabel lblRandomFieldSize = new JLabel("Random field size");
+				GridBagConstraints gbc_lblRandomFieldSize = new GridBagConstraints();
+				gbc_lblRandomFieldSize.insets = new Insets(0, 0, 5, 5);
+				gbc_lblRandomFieldSize.anchor = GridBagConstraints.EAST;
+				gbc_lblRandomFieldSize.gridx = 0;
+				gbc_lblRandomFieldSize.gridy = 0;
+				panel.add(lblRandomFieldSize, gbc_lblRandomFieldSize);
+			}
+			{
+				fldRandomAreaSize = new JTextField();
+				GridBagConstraints gbc_fldRandomAreaSize = new GridBagConstraints();
+				gbc_fldRandomAreaSize.insets = new Insets(0, 0, 5, 0);
+				gbc_fldRandomAreaSize.fill = GridBagConstraints.HORIZONTAL;
+				gbc_fldRandomAreaSize.gridx = 1;
+				gbc_fldRandomAreaSize.gridy = 0;
+				panel.add(fldRandomAreaSize, gbc_fldRandomAreaSize);
+				fldRandomAreaSize.setColumns(10);
+			}
+			{
+				JLabel lblFillPercent = new JLabel("Fill percent");
+				GridBagConstraints gbc_lblFillPercent = new GridBagConstraints();
+				gbc_lblFillPercent.anchor = GridBagConstraints.EAST;
+				gbc_lblFillPercent.insets = new Insets(0, 0, 0, 5);
+				gbc_lblFillPercent.gridx = 0;
+				gbc_lblFillPercent.gridy = 1;
+				panel.add(lblFillPercent, gbc_lblFillPercent);
+			}
+			{
+				fldRandomFillPercent = new JTextField();
+				GridBagConstraints gbc_fldRandomFillPercent = new GridBagConstraints();
+				gbc_fldRandomFillPercent.fill = GridBagConstraints.HORIZONTAL;
+				gbc_fldRandomFillPercent.gridx = 1;
+				gbc_fldRandomFillPercent.gridy = 1;
+				panel.add(fldRandomFillPercent, gbc_fldRandomFillPercent);
+				fldRandomFillPercent.setColumns(10);
+			}
+		}
 		{
 			JPanel panel = new JPanel();
 			panel.setBorder(new TitledBorder(null, "Colors", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -153,9 +214,9 @@ public class SettingsDialog extends JDialog {
 			contentPanel.add(panel);
 			GridBagLayout gbl_panel = new GridBagLayout();
 			gbl_panel.columnWidths = new int[]{0, 0, 0};
-			gbl_panel.rowHeights = new int[]{0, 0, 0};
+			gbl_panel.rowHeights = new int[]{0, 0, 0, 0};
 			gbl_panel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-			gbl_panel.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+			gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
 			panel.setLayout(gbl_panel);
 			{
 				JLabel lblSize = new JLabel("Size");
@@ -179,10 +240,20 @@ public class SettingsDialog extends JDialog {
 			{
 				JLabel lblBackground = new JLabel("Background");
 				GridBagConstraints gbc_lblBackground = new GridBagConstraints();
-				gbc_lblBackground.insets = new Insets(0, 0, 0, 5);
+				gbc_lblBackground.insets = new Insets(0, 0, 5, 5);
 				gbc_lblBackground.gridx = 0;
 				gbc_lblBackground.gridy = 1;
 				panel.add(lblBackground, gbc_lblBackground);
+			}
+			{
+				chckbxAntiAliasExport = new JCheckBox("Antialiasing");
+				chckbxAntiAliasExport.setHorizontalAlignment(SwingConstants.TRAILING);
+				GridBagConstraints gbc_chckbxAntiAliasExport = new GridBagConstraints();
+				gbc_chckbxAntiAliasExport.anchor = GridBagConstraints.WEST;
+				gbc_chckbxAntiAliasExport.gridwidth = 2;
+				gbc_chckbxAntiAliasExport.gridx = 0;
+				gbc_chckbxAntiAliasExport.gridy = 2;
+				panel.add(chckbxAntiAliasExport, gbc_chckbxAntiAliasExport);
 			}
 		}
 		{

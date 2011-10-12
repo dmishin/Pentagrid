@@ -56,7 +56,7 @@ public class PoincarePanel extends JComponent {
 		}
 		
 		Dimension sz = getSize();
-		paintContents( g, sz );
+		paintContents( g, sz, antiAlias );
 	}
 	
 	/**Draw grid cells*/
@@ -162,16 +162,16 @@ public class PoincarePanel extends JComponent {
 		if( isDisplayable() ) repaint();
 	}
 	
-	public BufferedImage exportImage( Dimension size ){
+	public BufferedImage exportImage( Dimension size, boolean antiAlias ){
 		BufferedImage img = new BufferedImage( size.width, size.height, BufferedImage.TYPE_INT_RGB);
 		Graphics g = img.getGraphics();
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, size.width, size.height);
-		paintContents( g, size );
+		paintContents( g, size, antiAlias );
 		return img;
 	}
 
-	private void paintContents(Graphics g, Dimension size) {
+	private void paintContents(Graphics g, Dimension size, boolean antiAlias) {
 		if ( cellsShape == null ){
 			synchronized( field ){
 				cellsShape = createFieldShape( field.getAliveCells() );				

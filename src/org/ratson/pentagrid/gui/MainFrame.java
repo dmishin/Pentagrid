@@ -15,15 +15,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
-import javax.annotation.processing.FilerException;
 import javax.imageio.ImageIO;
-import javax.sound.midi.SysexMessage;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -45,8 +40,6 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	private Rule rule = new Rule();
 	private PoincarePanel panel;
 	private EvaluationRunner evaluationThread=null;
-	private int randomFieldRadius = 7;
-	private double randomFillPercent = 0.5;
 	private Settings settings = new Settings();
 	
 	private void createUI(){
@@ -66,7 +59,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 					}
 					break;
 				case 'r':
-					setCells( Util.randomField( randomFieldRadius, randomFillPercent ) );
+					setCells( Util.randomField( settings.randomFieldRadius, settings.randomFillPercent ) );
 					break;
 				case 'd':
 					setCells( new Path[0] );
@@ -123,8 +116,11 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	}
 
 	protected void doEditSettings() {
-		SettingsDialog sd = new SettingsDialog(settings);
-		sd.showDialog();
+		Settings settingsCopy = (Settings)(settings.clone());
+		SettingsDialog sd = new SettingsDialog(settingsCopy);
+		if ( sd.showDialog() ){
+			settings = settingsCopy;
+		}
 	}
 
 	protected void toggleRunning() {
@@ -220,12 +216,14 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 			imageFileChooser.addChoosableFileFilter( filter );
 			imageFileChooser.setFileFilter( filter );
 		}
+		
 		if (imageFileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = imageFileChooser.getSelectedFile();
             if ( ! file.getName().contains("."))
             	file = new File( file.getParentFile(), file.getName()+".png");
             try {
-				ImageIO.write( panel.exportImage(new Dimension(settings.exportImageSize, settings.exportImageSize)), "PNG", file);
+				ImageIO.write( panel.exportImage(new Dimension(settings.exportImageSize, settings.exportImageSize), settings.exportAntiAlias ),
+						"PNG", file);
 			} catch (IOException err) {
 				JOptionPane.showMessageDialog(this, err.getMessage(), "Can not save file", JOptionPane.ERROR_MESSAGE);
 			}
