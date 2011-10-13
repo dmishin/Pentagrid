@@ -21,10 +21,11 @@ TODO:
 
 [] Create more decent GUI: buttons and menus instead of hotkeys
 [+] Settings dialog: done, but very primitive
-[] Add more settigns
+[+-] Add more settigns
+  [] Set up colors
 [] Make settings persistent
 [] Add help (now only README available)
 
-[] Save rule with field
+[+] Save rule with field
 [] Export and import field in some well-defined format
-[] Better file chooser dialogs: default file types and better title
+[+] Better file chooser dialogs: default file types and better title

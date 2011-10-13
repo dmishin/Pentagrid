@@ -37,6 +37,7 @@ import org.ratson.pentagrid.RuleSyntaxException;
 import org.ratson.pentagrid.TotalisticRule;
 import org.ratson.pentagrid.Util;
 import org.ratson.pentagrid.fields.SimpleMapField;
+import org.ratson.util.Pair;
 
 public class MainFrame extends JFrame implements NotificationReceiver {
 	
@@ -152,24 +153,29 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 			}
 		}
 	}
+	
+	public void setRule( TotalisticRule r){
+		rule = r;
+		rule.resetState();
+		updateFieldInfo();
+		System.out.println( "Rule set to "+rule);
+	}
+	
 	public void setRule( String sRule ) throws RuleSyntaxException{
 		stopEvaluation();
 		Rule parsed = Rule.parseRule(sRule);
 		if (parsed.isVacuumStable() ){
 			//normal rule
-			rule = parsed;
+			setRule( parsed );
 		}else{
 			if ( parsed.isValidDayNight() ){
 				DayNightRule converted = new DayNightRule(parsed);
 				System.out.println( "Converting Day/Night rule "+parsed+" to the pair of stable rules:"+ converted);
 				assert( converted.isValidRule() );
-				rule = converted;
+				setRule(converted);
 			}else
 				throw new RuleSyntaxException("Rule "+parsed+" is not supported: it has B0 and SA. Try inverted rule:"+parsed.invertBoth());
 		}
-		rule.resetState();
-		updateFieldInfo();
-		System.out.println( "Rule set to "+rule);
 	}
 	
 	public void setCells( Path[] cells ){
@@ -261,14 +267,19 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	private void saveFieldData( File f, Field fld ) throws FileNotFoundException, IOException{
 		ObjectOutputStream oos = new ObjectOutputStream( new GZIPOutputStream( new FileOutputStream( f )));
 		oos.writeObject( fld );
+		oos.writeObject( rule);
 		oos.close();
 	}
-	private Field loadFieldData( File f ) throws FileNotFoundException, IOException, ClassNotFoundException{
+	private Pair<Field, TotalisticRule> loadFieldData( File f ) throws FileNotFoundException, IOException, ClassNotFoundException{
 		ObjectInputStream ois = new ObjectInputStream(new GZIPInputStream(new FileInputStream( f )));
 		Object o = ois.readObject();
+		Object rule = ois.readObject();
 		ois.close();
-		if (! (o instanceof Field )) throw new IOException("File has wrong format or corrupted");
-		else return (Field) o; 
+		try{
+			return new Pair<Field, TotalisticRule>( (Field)o, (TotalisticRule) rule );
+		}catch(ClassCastException e){
+			throw new IOException("File has wrong format");
+		}
 	}
 	
 	private void ensureSaveFileChooser(){
@@ -296,8 +307,9 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		if ( fieldFileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = fieldFileChooser.getSelectedFile();
             try {
-				Field newWorld = loadFieldData(file);
-				setWorld( newWorld );
+				Pair<Field, TotalisticRule> world_rule= loadFieldData(file);
+				setWorld( world_rule.left );
+				setRule( world_rule.right );
 			} catch (Exception err) {
 				JOptionPane.showMessageDialog(this, err.getMessage(), "Can not load file", JOptionPane.ERROR_MESSAGE);
 			}

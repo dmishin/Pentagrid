@@ -1,6 +1,8 @@
 package org.ratson.pentagrid;
 
-public class DayNightRule implements TotalisticRule {
+import java.io.Serializable;
+
+public class DayNightRule implements TotalisticRule, Serializable {
 
 	private Rule baseRule;
 	private Rule[] subRules;

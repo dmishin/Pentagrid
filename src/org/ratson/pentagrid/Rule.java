@@ -1,10 +1,11 @@
 package org.ratson.pentagrid;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Rule implements TotalisticRule {
+public class Rule implements TotalisticRule, Serializable {
 
 	private boolean[] born = new boolean[11];
 	private boolean[] live = new boolean[11];
