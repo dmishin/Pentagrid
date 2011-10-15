@@ -75,7 +75,7 @@ public class SettingsDialog extends JDialog {
 			settings.randomFieldRadius = Integer.parseInt( fldRandomAreaSize.getText() );
 			if (settings.randomFieldRadius < 0 ) throw new Exception( "Size can not be < 0" );
 			if (settings.randomFieldRadius > 20 ) throw new Exception( "Size can not be > 20" );
-			settings.randomFillPercent = Math.min( 100, Math.max( 0, Integer.parseInt(fldRandomFillPercent.getText() )));
+			settings.randomFillPercent = 0.01 * Math.min( 100, Math.max( 0, Integer.parseInt(fldRandomFillPercent.getText() )));
 		}catch( NumberFormatException e ) {throw new Exception( "Bd number format in export image size" );}
 		if ( settings.exportImageSize <=0) throw new Exception( "Image size too small" );
 		if ( settings.exportImageSize >= 4096) throw new Exception( "Image size too big" );
