@@ -23,7 +23,7 @@ import org.ratson.util.Util;
 
 /**Draws cells in the poincare projection*/
 public class PoincarePanel extends JComponent {
-	static class PointDbl implements Comparable<PointDbl>{
+	static final class PointDbl implements Comparable<PointDbl>{
 		/**Coordinates and pseudo-angle*/
 		double x, y, pAngle;
 		public PointDbl( double x, double y){
@@ -91,7 +91,6 @@ public class PoincarePanel extends JComponent {
 	    g2.translate( sz.width/2, sz.height/2);
 	    
 		paintContents( g2, sz );
-		paintFarAwayPoints( g2, sz );
 	}
 	
 	private void paintFarAwayPoints(Graphics2D g2, Dimension sz ) {
@@ -234,6 +233,7 @@ public class PoincarePanel extends JComponent {
 		g.fillRect(0, 0, size.width, size.height);
 		if( antiAlias )
 			g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g.translate(size.width/2, size.height/2);
 		paintContents( g, size );
 		return img;
 	}
@@ -258,6 +258,8 @@ public class PoincarePanel extends JComponent {
 		g2.drawOval(-1, -1, 2, 2);
 		
 		g2.setTransform(oldTfm);
+		
+		paintFarAwayPoints( g2, size );
 	}
 	
 }
