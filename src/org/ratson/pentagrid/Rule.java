@@ -24,9 +24,10 @@ public class Rule implements TotalisticRule, Serializable {
 			live[ whenLive[i] ] = true;
 		}
 	}
-	/**Default rule B3/S23*/
+	/**Default rule B/S*/
 	public Rule(){
-		set( new int[]{3}, new int[]{2,3});
+		Arrays.fill(born, false);
+		Arrays.fill(live, false);
 	}
 	
 	public static Rule parseRule( String rule ) throws RuleSyntaxException{
@@ -45,7 +46,7 @@ public class Rule implements TotalisticRule, Serializable {
 	public boolean isVacuumStable(){
 		return born[0] == false;
 	}
-	/**Rturns True, i this rule is actuallt a Day/Night rule, when both vacuum and inverted vacuum are not stable*/
+	/**Rturns True, i this rule is actually a Day/Night rule, when both vacuum and inverted vacuum are not stable*/
 	public boolean isValidDayNight(){
 		return (born[0] == true) && (live[10] == false);
 	}
@@ -67,7 +68,7 @@ public class Rule implements TotalisticRule, Serializable {
 		return r;
 	}
 	
-	/**Convert stringto the array of integers
+	/**Convert string to the array of integers
 	 * @throws RuleSyntaxException */
 	private static int[] parseRule_str2intArray( String s ) throws RuleSyntaxException
 	{
@@ -86,7 +87,8 @@ public class Rule implements TotalisticRule, Serializable {
 	/* (non-Javadoc)
 	 * @see org.ratson.pentagrid.TotalisticRule#nextState(int, int)
 	 */
-	public int nextState(int prevState, int numNeighbores) {
+	@Override
+	public int nextState(int worldState, int prevState, int numNeighbores) {
 		switch (prevState){
 		case 1:
 			return live[ numNeighbores ] ? 1 : 0;
@@ -136,4 +138,8 @@ public class Rule implements TotalisticRule, Serializable {
 	public void nextIteration() {}		//Doing nothing. Simple rules are not state-dependent
 	public void resetState() {}
 	public String getCode(){return toString();}
+	@Override
+	public int nextFieldState(int prevFieldState) {
+		return prevFieldState; //this ruel is state-independent
+	}
 }

@@ -6,11 +6,10 @@ public class DayNightRule implements TotalisticRule, Serializable {
 
 	private Rule baseRule;
 	private Rule[] subRules;
-	private int state = 0;
 	
 	@Override
-	public int nextState(int prevState, int numNeighbores) {
-		return subRules[state].nextState(prevState, numNeighbores);
+	public int nextState(int worldState, int prevState, int numNeighbores) {
+		return subRules[ worldState ].nextState( 0, prevState, numNeighbores);
 	}
 	
 	public DayNightRule( Rule baseRule ){
@@ -22,20 +21,20 @@ public class DayNightRule implements TotalisticRule, Serializable {
 	}
 
 	@Override
-	public void nextIteration() {
-		state = (state + 1)%2;
-	}
-	
-	@Override
 	public String toString() {
-		return "DayNight{"+baseRule+"} " + ( state==0? "NORM" : "INV" ) + "="+subRules[state];  
-	}
-
-	public void resetState() {
-		state = 0;
+		return "DayNight{"+baseRule+"}";  
 	}
 	public boolean isValidRule(){
 		return subRules[0].isVacuumStable() && subRules[1].isVacuumStable();
 	}
-	public String getCode(){ return baseRule.getCode(); };
+	public String getCode(){ return baseRule.getCode(); }
+
+	@Override
+	public int nextFieldState(int prevFieldState) {
+		switch( prevFieldState ){
+		case 0: return 1;
+		case 1: return 0;
+		default: throw new RuntimeException("Bad world state:"+prevFieldState);
+		}
+	}
 }

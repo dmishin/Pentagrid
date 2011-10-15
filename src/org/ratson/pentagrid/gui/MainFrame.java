@@ -54,7 +54,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		 getContentPane().add( lblFieldInfo, BorderLayout.NORTH );
 	}
 	private void updateFieldInfo(){
-		String infoStr = String.format("Population:%d Rule:%s", world.population(), rule);
+		String infoStr = String.format("Population:%d State:%d Rule:%s", world.population(), world.getFieldState(), rule);
 		lblFieldInfo.setText( infoStr );
 	}
 	private void addHandlers(){
@@ -70,11 +70,9 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 					}
 					break;
 				case 'r':
-					rule.resetState();
 					setCells( Util.randomField( settings.randomFieldRadius, settings.randomFillPercent ) );
 					break;
 				case 'd':
-					rule.resetState();
 					setCells( new Path[0] );
 					break;
 				case 'x':
@@ -156,7 +154,6 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	
 	public void setRule( TotalisticRule r){
 		rule = r;
-		rule.resetState();
 		updateFieldInfo();
 		System.out.println( "Rule set to "+rule);
 	}
@@ -186,6 +183,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		}
 		panel.rebuildCells();
 		world.setCells( cells );
+		world.setFieldState(0);
 		updateFieldInfo();
 		if (wasRunning) startEvaluation();
 	}

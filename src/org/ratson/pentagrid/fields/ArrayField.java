@@ -28,7 +28,7 @@ public final class ArrayField extends Field{
 	@Override
 	public synchronized void evaluate(TotalisticRule r) {
 		aliveCells = evaluate(aliveCells, r);
-		r.nextIteration();//for the state-changing rules, update the state.
+		setFieldState( r.nextFieldState( getFieldState()));
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public final class ArrayField extends Field{
 		ArrayList<Path> newAlive = new ArrayList<Path>( cells.length );
 		for (Entry<Path, NeighborhoodRecord> entry : withNeighbores.entrySet()) {
 			NeighborhoodRecord rec = entry.getValue();
-			if (rule.nextState( rec.isAlive?1:0, rec.numNeighbores ) != 0){
+			if (rule.nextState( getFieldState(), rec.isAlive?1:0, rec.numNeighbores ) != 0){
 				newAlive.add( entry.getKey() );
 			}
 		}

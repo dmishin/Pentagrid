@@ -1,13 +1,7 @@
 package org.ratson.pentagrid;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-
 
 /**Base abstract field.
  * Different concrete fields implement different ways of storing and updating information
@@ -15,6 +9,11 @@ import java.util.Map.Entry;
  *
  */
 public abstract class Field implements Serializable{
+	protected int fieldState=0;
+	/**Global field state. Used by the day.night rules*/
+	public final int getFieldState(){ return fieldState; };
+	/**Global field state. Used by the day.night rules*/
+	public final void setFieldState( int newState ){ fieldState = newState; };
 	/**Replace field cells with given data. New state is 1*/
 	public abstract void setCells( Iterable<Path> cells  );
 	/**Replace field cells with given data. New state is 1*/
@@ -33,6 +32,7 @@ public abstract class Field implements Serializable{
 	public abstract int getCell(Path cell);
 	/***Sets cell state*/
 	public abstract void setCell(Path cell, int newState);
+	/**Create copy of the field*/
 	public abstract Field copy();
 }
 

@@ -2,7 +2,6 @@ package org.ratson.pentagrid.fields;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -47,7 +46,7 @@ public final class SimpleMapField extends Field{
 		//First process all cells in the old array
 		for( Iterator<CellRecord> iRec = data.values().iterator(); iRec.hasNext(); ){
 			CellRecord state = iRec.next();
-			int nextState = r.nextState(state.state, state.sum); 
+			int nextState = r.nextState( getFieldState(), state.state, state.sum); 
 			if ( nextState != 0){
 				state.state = nextState;
 				state.sum = 0;
@@ -59,7 +58,7 @@ public final class SimpleMapField extends Field{
 		for( Iterator<Entry<Path, CellRecord> > iRec = newCells.entrySet().iterator(); iRec.hasNext(); ){
 			Entry<Path, CellRecord> path_state = iRec.next();  
 			CellRecord state = path_state.getValue();
-			int nextState = r.nextState(state.state, state.sum); 
+			int nextState = r.nextState( getFieldState(), state.state, state.sum); 
 			if ( nextState != 0){
 				state.state = nextState;
 				state.sum = 0;
@@ -67,7 +66,7 @@ public final class SimpleMapField extends Field{
 			}
 		}
 		newCells.clear();
-		r.nextIteration();//for the state-changing rules, update the state.
+		setFieldState( r.nextFieldState( getFieldState() )); //update the world global state
 	}
 	
 	public synchronized Path[] getAliveCellsArray(){
