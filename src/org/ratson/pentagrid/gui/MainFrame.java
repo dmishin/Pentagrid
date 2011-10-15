@@ -42,7 +42,7 @@ import org.ratson.util.Pair;
 public class MainFrame extends JFrame implements NotificationReceiver {
 	
 	private Field world = new SimpleMapField();
-	private TotalisticRule rule = new Rule();
+	private TotalisticRule rule = new Rule(new int[]{3}, new int[]{2,3});
 	private PoincarePanel panel;
 	private EvaluationRunner evaluationThread=null;
 	private Settings settings = new Settings();
