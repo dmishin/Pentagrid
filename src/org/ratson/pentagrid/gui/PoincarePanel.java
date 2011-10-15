@@ -19,46 +19,32 @@ import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.Path;
 import org.ratson.pentagrid.PathNavigation;
 import org.ratson.pentagrid.Transform;
+import org.ratson.util.Util;
 
 /**Draws cells in the poincare projection*/
 public class PoincarePanel extends JComponent {
 	static class PointDbl implements Comparable<PointDbl>{
-		double x,y,pAngle;
+		/**Coordinates and pseudo-angle*/
+		double x, y, pAngle;
 		public PointDbl( double x, double y){
 			double id = 1.0/Math.sqrt( x*x+y*y );
 			this.x=x*id;
 			this.y=y*id;
-			pAngle = quickAtan2(x, y);
+			pAngle = Util.quickAtan2(x, y);
 		}
 		
-		public static double quickAtan2( double x, double y ){
-			boolean pp = x >= -y;
-			boolean pq = x >=  y;
-			if ( pp && pq ){ //OX axis, positive direction
-				return y/x; // from -1 to 1
-			}
-			if ( pp && !pq  ){ //OY axis, positive direction
-				return -x/y + 2; //from 1 to 3
-			}
-			if ( !pp && !pq){ //OX axis, negative directoin
-				return y / x + 4; //from 3 to 5
-			}
-			//rest: OY axis, negative
-			return -x/y + 6;//from 5 to 7
-		}
 		@Override
 		public int compareTo(PointDbl arg0) {
 			if (arg0.pAngle < pAngle) return -1;
 			if (arg0.pAngle == pAngle) return 0;
 			return 1;
 		}
+		
 		@Override
-		public String toString() {
-			return "("+x+";"+y+")";
-		}
-		public double distTo( PointDbl p ){
-			return Math.abs( p.pAngle - pAngle );
-		}
+		public String toString() { return "("+x+";"+y+")"; }
+		
+		/**Distanec to anouther point*/
+		public double distTo( PointDbl p ){ return Math.abs( p.pAngle - pAngle ); }
 	};
 	private Transform viewTfm = new Transform();
 	private int viewTfmModifCounter = 0; //how many time view transform was modified.
@@ -102,6 +88,8 @@ public class PoincarePanel extends JComponent {
 		Graphics2D g2 = (Graphics2D) g;
 		if( antiAlias )
 			g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+	    g2.translate( sz.width/2, sz.height/2);
+	    
 		paintContents( g2, sz );
 		paintFarAwayPoints( g2, sz );
 	}
@@ -109,14 +97,9 @@ public class PoincarePanel extends JComponent {
 	private void paintFarAwayPoints(Graphics2D g2, Dimension sz ) {
 		double scale = getScale( sz );		
 		double angularStep = 2.0 / scale ; 
-	    g2.translate( sz.width/2, sz.height/2);
-	    
 		g2.setColor(clrCell);
 		g2.setStroke( new BasicStroke(1) );
-		if( farAwayPoints.size() > 0 ) {
-			System.out.println( "Drawing "+farAwayPoints.size()+" far points");
-			System.out.println( "Point xy:"+farAwayPoints.get(0) );
-		}
+
 		PointDbl oldPoint = null;
 		for( PointDbl p: farAwayPoints ){
 			if ( oldPoint == null || p.distTo( oldPoint ) > angularStep ) {
@@ -202,11 +185,13 @@ public class PoincarePanel extends JComponent {
 
 	private void createCellShape( GeneralPath path, Path cell ){
 		Transform pathTfm = viewTfm.mul( PathNavigation.getTransformation(cell) );
-		double[] xyt = pathTfm.tfmVector(new double[]{0,0,1} );
-		if ( xyt[2] < 100 )
+		//double[] xyt = pathTfm.tfmVector(new double[]{0,0,1} );
+		double t = pathTfm.getAt(2, 2);
+		if ( t < 100 )
 			PoincareGraphics.renderPoincarePolygon( path, pathTfm, pentagonPoints, true);
 		else{
-			farAwayPoints.add( new PointDbl(xyt[0],xyt[1]));
+			//farAwayPoints.add( new PointDbl(xyt[0],xyt[1]));
+			farAwayPoints.add( new PointDbl(pathTfm.getAt(0, 2), pathTfm.getAt(1, 2))); 
 		}
 	}
 	
@@ -214,7 +199,7 @@ public class PoincarePanel extends JComponent {
 		return x*x+y*y;
 	}
 	private double getScale( Dimension size ){
-		return 0.5 * ( Math.min( size.width, size.height ) - margin );
+		return Math.max( 1, 0.5 * ( Math.min( size.width, size.height ) - margin ) );
 	}
 	/**Given the point in th view coordinates, return path to the cell, containing it*/
 	public Path mouse2cellPath( int x, int y ){
@@ -261,18 +246,17 @@ public class PoincarePanel extends JComponent {
 		}
 		AffineTransform oldTfm = g2.getTransform();
 		double scale = getScale( size );
-				
-		g2.translate( size.width/2, size.height/2);
 		g2.scale(scale, scale);
 		
 		g2.setColor(clrCell);
 		g2.fill(cellsShape);
+
+		if ( showGrid ) doShowGrid( g2 );
 		
 		g2.setColor(clrBorder);
 		g2.setStroke( new BasicStroke(0) );
 		g2.drawOval(-1, -1, 2, 2);
 		
-		if ( showGrid ) doShowGrid( g2 );
 		g2.setTransform(oldTfm);
 	}
 	
