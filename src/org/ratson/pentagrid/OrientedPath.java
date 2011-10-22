@@ -1,5 +1,8 @@
 package org.ratson.pentagrid;
 
+import java.util.Arrays;
+
+import org.ratson.util.Function1;
 import org.ratson.util.Util;
 
 /**Oriented path stores information about Pentagrid cell and orientation.
@@ -34,12 +37,13 @@ public final class OrientedPath {
 	 *  Returns i'th neighbore, oriented so that it's vector point strictly outside (for odd) or strictly inside (for even)
 	 *  Neighbore index is in [1..10] 
 	 * */
-	public final OrientedPath getNeighbore( int index ){
+	/*public final OrientedPath getNeighbore( int index ){
 		System.out.println( "Getting "+index+"'th neighbore for "+this);
 		OrientedPath rval = getNeighbore_(index);
 		System.out.println(""+this+" --("+index+")-> "+rval);
 		return rval;
 	}
+	*/
 	private OrientedPath getRootNeigh(){
 		if( path.isRoot() ) throw new RuntimeException("root has not root");
 		if (path.odd()){
@@ -50,9 +54,9 @@ public final class OrientedPath {
 				return new OrientedPath( parentPath, Util.mod( path.getIndex() - 5, 10));
 			}else if (parentPath.odd()){
 				//offset = this.index + 3
-				return new OrientedPath( parentPath, Util.mod( path.getIndex() + 3,10) ); // !!TODO index msut be not 0!
+				return new OrientedPath( parentPath, Util.mod( path.getIndex() + 3,10) );
 			}else{//parent oath is even
-				return new OrientedPath( parentPath, Util.mod( path.getIndex() - 3, 10) ); // !!TODO index msut be not 0!
+				return new OrientedPath( parentPath, Util.mod( path.getIndex() - 3, 10) );
 			}
 		}else{
 			Path parentPath = path.getTail();
@@ -61,13 +65,13 @@ public final class OrientedPath {
 				//offset = this.index - 10 = this.index (even!)
 				return new OrientedPath( parentPath, Util.mod( path.getIndex(), 10));
 			}else if (parentPath.odd()){
-				return new OrientedPath( path.getTail(), Util.mod(path.getIndex()-2,10)); // !!TODO index msut be not 0!
+				return new OrientedPath( path.getTail(), Util.mod(path.getIndex()-2,10));
 			}else{ // parent path is even
-				return new OrientedPath( path.getTail(), Util.mod(path.getIndex()+2,10)); // !!TODO index msut be not 0!
+				return new OrientedPath( path.getTail(), Util.mod(path.getIndex()+2,10));
 			}			
 		}
 	}
-	public final OrientedPath getNeighbore_( int index ){
+	public final OrientedPath getNeighbore( int index ){
 		int absoluteNeighIndex = Util.cycle10( index + orientation ); //index of the neighbore, in absolute coordinates.
 		//System.out.println("#"+this+" -> "+absoluteNeighIndex);
 		
@@ -128,23 +132,32 @@ public final class OrientedPath {
 		}
 	}
 	
+	
+	private static void test_chain( Path p ){
+		OrientedPath o = new OrientedPath(p, 0);
+		Path[] n0 = PathNavigation.neigh10(p);
+		Path[] n1 = new Path[10];
+		for( int i = 0; i < 10; ++ i){
+			n1[i] = o.getNeighbore(i+1).path;
+		}
+		Arrays.sort(n0);
+		Arrays.sort(n1);
+		if ( !Arrays.equals(n0, n1) ){
+			System.out.println("Neighbores calculated incorrectly for "+p);
+		}
+	}
 	public static void main(String[] args) {
 		Path p = Path.fromArray( new int[]{1,2} );
+		test_chain(p);
 		OrientedPath o = new OrientedPath( p, 0);
 		System.out.println( o.getNeighbore(1));
-		/*
-		for( int i =1; i <= 10; ++i){
-			try{
-				System.out.println( ""+i+"  "+o.getNeighbore(i));
-			}catch( RuntimeException e){
-				System.out.println( ""+i+"  "+e.getMessage());
+		System.out.println("Making big test...");
+		org.ratson.pentagrid.Util.forField( 5, new Function1<Path, Boolean>() {
+			public Boolean call(Path arg) {
+				test_chain( arg );
+				return true;
 			}
-		}
-		Path[] n = PathNavigation.neigh10( p );
-		for( int i =0; i < n.length; ++ i){
-			System.out.println( "" + (i+1) + n[i]);
-		}
-		
-		*/
+		});
+		System.out.println("Test done!");
 	}
 }
