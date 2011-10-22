@@ -169,4 +169,13 @@ public final class Path implements Comparable<Path>, Serializable{
 			else return tail.compareTo(o.tail);
 		}
 	}
+
+	public static Path fromArray(int[] is) {
+		Path rval = getRoot();
+		for (int i = 0; i < is.length; i++) {
+			rval = rval.child( is[i] );
+		}
+		if (!rval.isCorrect()) throw new RuntimeException("Incorrect path specification");
+		return rval;
+	}
 }

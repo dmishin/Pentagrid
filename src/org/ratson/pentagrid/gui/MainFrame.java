@@ -30,6 +30,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.ratson.pentagrid.DayNightRule;
 import org.ratson.pentagrid.Field;
+import org.ratson.pentagrid.OrientedPath;
 import org.ratson.pentagrid.Path;
 import org.ratson.pentagrid.PathNavigation;
 import org.ratson.pentagrid.Rule;
@@ -115,8 +116,16 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				try{
 					Path point = panel.mouse2cellPath(arg0.getX(), arg0.getY());
 					if (point != null){
-						world.setCell( point, 1 ^ world.getCell( point ) );
-						panel.rebuildCells();
+						if( arg0.getButton() == MouseEvent.BUTTON1 ){
+							world.setCell( point, 1 ^ world.getCell( point ) );
+							panel.rebuildCells();
+						}else{
+							OrientedPath o = new OrientedPath(point, 0);
+							for( int i = 1; i <= 10; ++i ){
+								world.setCell( o.getNeighbore(i).path, 1 );
+							}
+							panel.rebuildCells();
+						}
 					}else{
 						System.err.println("Non-point");
 					}
