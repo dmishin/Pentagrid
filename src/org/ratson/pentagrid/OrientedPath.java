@@ -132,6 +132,25 @@ public final class OrientedPath {
 		}
 	}
 	
+	/**Attach given path to the oriented path.
+	 * Returned path is oriented naturally.
+	 * Equivalent to shifting origin of the applied path.
+	 * @param p
+	 * @return
+	 */
+	public OrientedPath attach( Path p ){
+		if (p.isRoot()) return this; //trivial case
+		Path parent = p.getTail();
+		if (parent.isRoot()){
+			return getNeighbore( p.getIndex() );
+		}
+		if (parent.odd()){
+			return attach( parent ).getNeighbore( Util.cycle10( p.getIndex() -2 ) );
+		}else{//even
+			return attach( parent ).getNeighbore( Util.cycle10( p.getIndex() + 2 ) );			
+		}
+	}
+	
 	
 	private static void test_chain( Path p ){
 		OrientedPath o = new OrientedPath(p, 0);
@@ -155,6 +174,19 @@ public final class OrientedPath {
 		org.ratson.pentagrid.Util.forField( 5, new Function1<Path, Boolean>() {
 			public Boolean call(Path arg) {
 				test_chain( arg );
+				return true;
+			}
+		});
+		
+		System.out.println("Testing attach to zero...");
+		org.ratson.pentagrid.Util.forField( 5, new Function1<Path, Boolean>() {
+			public Boolean call(Path p) {
+				OrientedPath o = new OrientedPath( Path.getRoot(), 0);
+				OrientedPath o1 = o.attach(p);
+				if ( !o1.path.equals(p) ){
+					System.err.println( "Error: "+o+" attach "+p+"="+o1+" != "+p);
+					return false;
+				}
 				return true;
 			}
 		});
