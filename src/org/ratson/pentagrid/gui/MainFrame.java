@@ -42,14 +42,14 @@ import org.ratson.util.Pair;
 
 public class MainFrame extends JFrame implements NotificationReceiver {
 	
-	private Field world = new SimpleMapField();
+	private SimpleMapField world = new SimpleMapField();
 	private TotalisticRule rule = new Rule(new int[]{3}, new int[]{2,3});
-	private PoincarePanel panel;
+	private FarPoincarePanel panel;
 	private EvaluationRunner evaluationThread=null;
 	private Settings settings = new Settings();
 	private JLabel lblFieldInfo;
 	private void createUI(){
-		 panel = new PoincarePanel( world );
+		 panel = new FarPoincarePanel( world );
 		 lblFieldInfo =  new JLabel();
 		 getContentPane().add( panel );
 		 getContentPane().add( lblFieldInfo, BorderLayout.NORTH );
@@ -67,7 +67,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 					if ( evaluationThread == null){
 						world.evaluate( rule );
 						updateFieldInfo();
-						panel.rebuildCells();
+						panel.update();
 					}
 					break;
 				case 'r':
@@ -90,6 +90,9 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 					break;
 				case 't':
 					doEditSettings();
+					break;
+				case 'u':
+					panel.update();
 					break;
 				}
 			}
@@ -118,13 +121,10 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 					if (point != null){
 						if( arg0.getButton() == MouseEvent.BUTTON1 ){
 							world.setCell( point, 1 ^ world.getCell( point ) );
-							panel.rebuildCells();
+							panel.update();
 						}else{
 							OrientedPath o = new OrientedPath(point, 0);
-							for( int i = 1; i <= 10; ++i ){
-								world.setCell( o.getNeighbore(i).path, 1 );
-							}
-							panel.rebuildCells();
+							panel.rebase( o );
 						}
 					}else{
 						System.err.println("Non-point");
@@ -190,7 +190,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 			stopEvaluation();
 			wasRunning = true;
 		}
-		panel.rebuildCells();
+		panel.update();
 		world.setCells( cells );
 		world.setFieldState(0);
 		updateFieldInfo();
@@ -240,7 +240,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 			SwingUtilities.invokeLater(new Runnable(){
 				@Override
 				public void run() {
-					panel.rebuildCells();
+					panel.update();
 					updateFieldInfo();
 				}
 			});
@@ -263,12 +263,14 @@ public class MainFrame extends JFrame implements NotificationReceiver {
             File file = imageFileChooser.getSelectedFile();
             if ( ! file.getName().contains("."))
             	file = new File( file.getParentFile(), file.getName()+".png");
+            /*
             try {
 				ImageIO.write( panel.exportImage(new Dimension(settings.exportImageSize, settings.exportImageSize), settings.exportAntiAlias ),
 						"PNG", file);
 			} catch (IOException err) {
 				JOptionPane.showMessageDialog(this, err.getMessage(), "Can not save file", JOptionPane.ERROR_MESSAGE);
 			}
+			*/
 		}
 	}
 	private void saveFieldData( File f, Field fld ) throws FileNotFoundException, IOException{
@@ -277,13 +279,13 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		oos.writeObject( rule);
 		oos.close();
 	}
-	private Pair<Field, TotalisticRule> loadFieldData( File f ) throws FileNotFoundException, IOException, ClassNotFoundException{
+	private Pair<SimpleMapField, TotalisticRule> loadFieldData( File f ) throws FileNotFoundException, IOException, ClassNotFoundException{
 		ObjectInputStream ois = new ObjectInputStream(new GZIPInputStream(new FileInputStream( f )));
 		Object o = ois.readObject();
 		Object rule = ois.readObject();
 		ois.close();
 		try{
-			return new Pair<Field, TotalisticRule>( (Field)o, (TotalisticRule) rule );
+			return new Pair<SimpleMapField, TotalisticRule>( (SimpleMapField)o, (TotalisticRule) rule );
 		}catch(ClassCastException e){
 			throw new IOException("File has wrong format");
 		}
@@ -314,7 +316,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		if ( fieldFileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = fieldFileChooser.getSelectedFile();
             try {
-				Pair<Field, TotalisticRule> world_rule= loadFieldData(file);
+				Pair<SimpleMapField, TotalisticRule> world_rule= loadFieldData(file);
 				setWorld( world_rule.left );
 				setRule( world_rule.right );
 			} catch (Exception err) {
@@ -323,7 +325,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		}
 	}
 
-	private void setWorld(Field newWorld) {
+	private void setWorld(SimpleMapField newWorld) {
 		assert newWorld != null;
 		stopEvaluation();
 		world = newWorld;
