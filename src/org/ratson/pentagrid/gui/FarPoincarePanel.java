@@ -207,6 +207,7 @@ public class FarPoincarePanel extends JComponent {
 			viewTfmModifCounter = 0;
 			viewTransform= viewTransform.fix();
 		}
+		adjustViewCenter();
 		cellsShape = null;
 		gridShape = null;
 		repaint();
@@ -258,11 +259,18 @@ public class FarPoincarePanel extends JComponent {
 	}
 	/**Shift view origin by the given offset, and adjust transformation so that view does not change*/
 	public void rebaseRelative( Path offset ){
+		if (offset.isRoot()) return; //nothing to do
 		OrientedPath newCenter = viewCenter.attach( offset );
 		Transform offsetTfm = PathNavigation.getTransformation( offset );
 		viewCenter = newCenter;
 		viewTransform = viewTransform.mul( offsetTfm );
 		rebuildVisibleCells();
 		update();
+	}
+	/**adjust view center, setting it to the cell, nearest to the geometrical center of the Poincare circle*/
+	public void adjustViewCenter(){
+		double [] point = new double[]{ 0,0,1 };		
+		Path centerPath = PathNavigation.point2path(viewTransform.hypInverse().tfmVector(point)); //path to the cell at the geometric center
+		rebaseRelative( centerPath );
 	}
 }
