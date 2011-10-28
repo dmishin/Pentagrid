@@ -225,7 +225,7 @@ public class FarPoincarePanel extends JComponent {
 		setView( viewTransform.setEye() );
 	}
 	/**Given the point in th view coordinates, return path to the cell, containing it*/
-	public Path mouse2cellPath( int x, int y ){
+	public Path mouse2cellPathRel( int x, int y ){
 		Dimension sz = getSize();		
 		double scale = getScale( sz );
 		//poincare projection coordinates
@@ -242,13 +242,27 @@ public class FarPoincarePanel extends JComponent {
 		
 		double [] point = new double[]{ dx*s, dy*s, 0.5*(d2+1)*s };
 		
-		Path relativePath = PathNavigation.point2path(viewTransform.hypInverse().tfmVector(point));
+		return PathNavigation.point2path(viewTransform.hypInverse().tfmVector(point));
+	}
+	/**Absolute path to the cell*/
+	public Path mouse2cellPath( int x, int y ){
+		Path relativePath = mouse2cellPathRel(x, y); 
 		return viewCenter.attach(relativePath).path;
 	}
+	/**Put view center to the specified cell, and reset view offset*/
 	public void rebase( OrientedPath newCenter ){
 		viewCenter = newCenter;
 		rebuildVisibleCells();
 		update();
 		centerView();
+	}
+	/**Shift view origin by the given offset, and adjust transformation so that view does not change*/
+	public void rebaseRelative( Path offset ){
+		OrientedPath newCenter = viewCenter.attach( offset );
+		Transform offsetTfm = PathNavigation.getTransformation( offset );
+		viewCenter = newCenter;
+		viewTransform = viewTransform.mul( offsetTfm );
+		rebuildVisibleCells();
+		update();
 	}
 }

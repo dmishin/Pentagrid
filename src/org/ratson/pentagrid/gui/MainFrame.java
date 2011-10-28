@@ -117,17 +117,18 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
 				try{
-					Path point = panel.mouse2cellPath(arg0.getX(), arg0.getY());
-					if (point != null){
-						if( arg0.getButton() == MouseEvent.BUTTON1 ){
+					if( arg0.getButton() == MouseEvent.BUTTON1 ){
+						Path point = panel.mouse2cellPath(arg0.getX(), arg0.getY());
+						if (point != null){
 							world.setCell( point, 1 ^ world.getCell( point ) );
 							panel.update();
 						}else{
-							OrientedPath o = new OrientedPath(point, 0);
-							panel.rebase( o );
+							System.err.println("Non-point");
 						}
 					}else{
-						System.err.println("Non-point");
+						Path point = panel.mouse2cellPathRel(arg0.getX(), arg0.getY());
+						//OrientedPath o = new OrientedPath(point, 0);
+						panel.rebaseRelative( point );
 					}
 				}catch( Exception err ){
 					System.err.println("Error:"+err.getMessage());
