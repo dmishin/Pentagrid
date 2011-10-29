@@ -28,7 +28,7 @@ import org.ratson.util.Function1;
 
 public class FarPoincarePanel extends JComponent {
 	private OrientedPath viewCenter = new OrientedPath(Path.getRoot(), 0);
-	private VisibleCell[] visibleCells = null;
+	private ArrayList<VisibleCell> visibleCells = new ArrayList<FarPoincarePanel.VisibleCell>();
 	private int visibleRadius = 5;
 	private Transform viewTransform = (new Transform()).setEye();
 	private SimpleMapField field = null;
@@ -67,26 +67,21 @@ public class FarPoincarePanel extends JComponent {
 	
 	/**re-enerate array of visible cells*/
 	private void rebuildVisibleCells(){
-		visibleCells = null;
-		final
-		ArrayList<VisibleCell> newCells = new ArrayList<FarPoincarePanel.VisibleCell>();
-		
+		visibleCells.clear();
 		Util.forField(visibleRadius, new Function1<Path, Boolean>() {
 			public Boolean call(Path relPath) {
-				newCells.add(new VisibleCell( relPath, viewCenter ));
+				visibleCells.add(new VisibleCell( relPath, viewCenter ));
 				return true;
 			}
 		});
-		//TODO avoid copying array back and forth.
-		visibleCells = new VisibleCell[ newCells.size() ];
-		visibleCells = newCells.toArray( visibleCells );
+		visibleCells.trimToSize();
 	}
 	
 	private boolean updateCellsState(){
 		boolean changed = false;
 		synchronized(field){
-			for (int i = 0; i < visibleCells.length; i++) {
-				changed = visibleCells[i].updateState(field) || changed;
+			for ( VisibleCell c : visibleCells ) {
+				changed = c.updateState(field) || changed;
 			}
 		}
 		return changed;
@@ -105,10 +100,12 @@ public class FarPoincarePanel extends JComponent {
 	
 	public void setViewRadius( int r ){
 		assert r >= 1;
-		visibleRadius = r;
-		rebuildVisibleCells();
-		updateCellsState();
-		repaint();
+		if ( r != visibleRadius ){
+			visibleRadius = r;
+			rebuildVisibleCells();
+			cellsShape = null;
+			update();
+		}
 	}
 
 	@Override
@@ -150,9 +147,9 @@ public class FarPoincarePanel extends JComponent {
 	/**Creates a shape, that is a projection of the field*/
 	private Shape createFieldShape(){
 		GeneralPath path = new GeneralPath();
-		for (int i = 0; i < visibleCells.length; i++) {
-			if ( visibleCells[i].state != 0 )
-				createCellShape(path, viewTransform.mul( visibleCells[i].relativeTfm) );
+		for ( VisibleCell c: visibleCells) {
+			if ( c.state != 0 )
+				createCellShape(path, viewTransform.mul( c.relativeTfm) );
 		}
 		return path;
 	}
