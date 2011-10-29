@@ -9,6 +9,7 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -24,9 +25,9 @@ import org.ratson.pentagrid.gui.PoincarePanel.PointDbl;
 import org.ratson.util.Function1;
 
 public class FarPoincarePanel extends JComponent {
-	OrientedPath viewCenter = new OrientedPath(Path.getRoot(), 0);
-	VisibleCell[] visibleCells = null;
-	int visibleRadius = 5;
+	private OrientedPath viewCenter = new OrientedPath(Path.getRoot(), 0);
+	private VisibleCell[] visibleCells = null;
+	private int visibleRadius = 5;
 	private Transform viewTransform = (new Transform()).setEye();
 	private SimpleMapField field = null;
 
@@ -42,25 +43,22 @@ public class FarPoincarePanel extends JComponent {
 	public Color clrCell = Color.BLUE;
 	public Color clrBorder= Color.BLACK;
 	public Color clrGrid= Color.LIGHT_GRAY;	
+	public Color clrExportBg = Color.WHITE;
 	private int margin = 30;
 
-	
+	/**Represents one cell, shown on display. Stores path to this cell, its relative transformation and state*/
 	static final class VisibleCell{
-		Path relativePath;
 		Path absolutePath;
 		Transform relativeTfm;
 		int state=0;
 		public VisibleCell( Path relative, OrientedPath origin ){
-			relativePath = relative;
 			absolutePath = origin.attach(relative).path;
 			relativeTfm = PathNavigation.getTransformation(relative);
 		}
-		public void updateState( SimpleMapField fld ){
+		public boolean updateState( SimpleMapField fld ){
+			int oldState = state;
 			state = fld.getCell( absolutePath );
-		}
-		/**Change origin of the cell*/
-		public void rebase( OrientedPath newOrigin ){
-			absolutePath = newOrigin.attach(relativePath).path;
+			return oldState != state;
 		}
 	}
 	
@@ -71,8 +69,8 @@ public class FarPoincarePanel extends JComponent {
 		ArrayList<VisibleCell> newCells = new ArrayList<FarPoincarePanel.VisibleCell>();
 		
 		Util.forField(visibleRadius, new Function1<Path, Boolean>() {
-			public Boolean call(Path arg) {
-				newCells.add(new VisibleCell( arg, viewCenter ));
+			public Boolean call(Path relPath) {
+				newCells.add(new VisibleCell( relPath, viewCenter ));
 				return true;
 			}
 		});
@@ -81,10 +79,14 @@ public class FarPoincarePanel extends JComponent {
 		visibleCells = newCells.toArray( visibleCells );
 	}
 	
-	private void updateCellsState(){
-		for (int i = 0; i < visibleCells.length; i++) {
-			visibleCells[i].updateState(field);
+	private boolean updateCellsState(){
+		boolean changed = false;
+		synchronized(field){
+			for (int i = 0; i < visibleCells.length; i++) {
+				changed = visibleCells[i].updateState(field) || changed;
+			}
 		}
+		return changed;
 	}
 	
 	public FarPoincarePanel( SimpleMapField f ){
@@ -95,7 +97,7 @@ public class FarPoincarePanel extends JComponent {
 	
 	public void setField( SimpleMapField f ){
 		field = f;
-		updateCellsState();
+		update();
 	}
 	
 	public void setViewRadius( int r ){
@@ -103,6 +105,7 @@ public class FarPoincarePanel extends JComponent {
 		visibleRadius = r;
 		rebuildVisibleCells();
 		updateCellsState();
+		repaint();
 	}
 
 	@Override
@@ -120,11 +123,7 @@ public class FarPoincarePanel extends JComponent {
 	/**Draw grid cells*/
 	private void doShowGrid( Graphics2D g2 ) {
 		if ( gridShape == null ){
-			//Get the transform for the central cell
-			Path centralCell = PathNavigation.point2path( viewTransform.hypInverse().tfmVector( new double[]{0,0,1}));
-			Transform centralTfm = PathNavigation.getTransformation(centralCell);
-			Transform relativeTfm = viewTransform.mul( centralTfm );
-			gridShape = gridDrawer.createShape(relativeTfm);
+			gridShape = gridDrawer.createShape(viewTransform);
 		}
 		
 		g2.setColor( clrGrid );
@@ -214,11 +213,10 @@ public class FarPoincarePanel extends JComponent {
 	}
 	/**Updates cell states and causes repaint*/
 	public void update(){
-		synchronized(field){
-			updateCellsState();
+		if ( updateCellsState() ){ //repaint only if some cells were changed
+			cellsShape = null;
+			repaint();
 		}
-		cellsShape = null;
-		repaint();
 	}
 	/**Move view to the origin*/
 	public void centerView(){
@@ -258,8 +256,8 @@ public class FarPoincarePanel extends JComponent {
 	public void setOrigin( OrientedPath newCenter ){
 		viewCenter = newCenter;
 		rebuildVisibleCells();
-		update();
 		setView( viewTransform.setEye() );
+		update();
 	}
 	public OrientedPath getOrigin(){
 		return viewCenter;
@@ -283,5 +281,16 @@ public class FarPoincarePanel extends JComponent {
 		}catch( RuntimeException err ){
 			System.err.println( "Failed to adjust path: "+err.getMessage() );
 		}
+	}
+	public BufferedImage exportImage( Dimension size, boolean antiAlias ){
+		BufferedImage img = new BufferedImage( size.width, size.height, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g = (Graphics2D)img.getGraphics();
+		g.setColor( clrExportBg );
+		g.fillRect(0, 0, size.width, size.height);
+		if( antiAlias )
+			g.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g.translate(size.width/2, size.height/2);
+		paintContents( g, size );
+		return img;
 	}
 }

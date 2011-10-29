@@ -121,7 +121,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				case KeyEvent.VK_G : panel.showGrid = ! panel.showGrid; panel.repaint(); break;
 				case KeyEvent.VK_ENTER: toggleRunning(); break;
 				}
-				updateLocationInfo();
+				updateLocationInfo(); //TODO: do this via event listeners
 			}
 		});
 		panel.addMouseListener(new MouseAdapter(){
@@ -275,14 +275,12 @@ public class MainFrame extends JFrame implements NotificationReceiver {
             File file = imageFileChooser.getSelectedFile();
             if ( ! file.getName().contains("."))
             	file = new File( file.getParentFile(), file.getName()+".png");
-            /*
             try {
 				ImageIO.write( panel.exportImage(new Dimension(settings.exportImageSize, settings.exportImageSize), settings.exportAntiAlias ),
 						"PNG", file);
 			} catch (IOException err) {
 				JOptionPane.showMessageDialog(this, err.getMessage(), "Can not save file", JOptionPane.ERROR_MESSAGE);
 			}
-			*/
 		}
 	}
 	private void saveFieldData( File f, Field fld ) throws FileNotFoundException, IOException{
