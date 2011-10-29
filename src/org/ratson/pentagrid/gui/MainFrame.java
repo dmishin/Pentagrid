@@ -20,6 +20,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import javax.imageio.ImageIO;
+import javax.swing.Box;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -47,17 +48,26 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	private FarPoincarePanel panel;
 	private EvaluationRunner evaluationThread=null;
 	private Settings settings = new Settings();
-	private JLabel lblFieldInfo;
+	private JLabel lblFieldInfo, lblLocationInfo;
 	private void createUI(){
+		 Box topBox = Box.createVerticalBox();
 		 panel = new FarPoincarePanel( world );
 		 lblFieldInfo =  new JLabel();
+		 lblLocationInfo = new JLabel();
+		 topBox.add( lblFieldInfo );
+		 topBox.add( lblLocationInfo );
 		 getContentPane().add( panel );
-		 getContentPane().add( lblFieldInfo, BorderLayout.NORTH );
+		 getContentPane().add( topBox, BorderLayout.NORTH );
 	}
 	private void updateFieldInfo(){
 		String infoStr = String.format("Population:%d State:%d Rule:%s", world.population(), world.getFieldState(), rule);
 		lblFieldInfo.setText( infoStr );
 	}
+	private void updateLocationInfo(){
+		String locStr = String.format( "Location: "+panel.getOrigin());
+		lblLocationInfo.setText( locStr );		
+	}
+	
 	private void addHandlers(){
 		addKeyListener(new KeyAdapter() {
 			@Override
@@ -106,11 +116,12 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				case KeyEvent.VK_RIGHT : panel.offsetView(-0.1, 0); break;
 				case KeyEvent.VK_OPEN_BRACKET : panel.rotateView( -0.03); break;
 				case KeyEvent.VK_CLOSE_BRACKET : panel.rotateView( 0.03); break;
-				case KeyEvent.VK_C : panel.centerView(); break;
+				case KeyEvent.VK_C : { panel.centerView(); break;}
 				case KeyEvent.VK_A : panel.antiAlias = ! panel.antiAlias; panel.repaint(); break;
 				case KeyEvent.VK_G : panel.showGrid = ! panel.showGrid; panel.repaint(); break;
 				case KeyEvent.VK_ENTER: toggleRunning(); break;
 				}
+				updateLocationInfo();
 			}
 		});
 		panel.addMouseListener(new MouseAdapter(){
