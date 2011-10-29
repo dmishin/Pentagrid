@@ -11,7 +11,7 @@ public class EvaluationRunner extends  Thread {
 
 	private final Field cells;
 	private int delayMs = 300;
-	private int limitPopulation = 50000; //stop evaluation, when reached this limit
+	private int limitPopulation = 200000; //stop evaluation, when reached this limit
 	volatile boolean stopRequested = false;
 	private NotificationReceiver receiver=null;
 	private TotalisticRule rule;
@@ -27,6 +27,11 @@ public class EvaluationRunner extends  Thread {
 	public void run() {
 		int count = 0;
 		while( ! stopRequested ){
+			if (cells.population() >= limitPopulation ){
+				System.out.println("Population reached "+cells.population()+" which exceeeds limit:"+limitPopulation+" stopping simulation");
+				stopRequested = true;
+				break;
+			}
 			try{
 				cells.evaluate(rule);
 				receiver.notifyUpdate( cells );
@@ -41,9 +46,25 @@ public class EvaluationRunner extends  Thread {
 		}
 		System.out.println("Evaluation stopped after "+count+" steps on population "+cells.population());
 	}
-
+	
 	public void requestStop() {
 		stopRequested = true;
 	}
-
+	
+	/*Setter-getter boilerplate*/
+	
+	public void setLimitPopulation(int limitPopulation) {
+		if ( limitPopulation < 0 ) throw new RuntimeException("Limit mus be > 1");
+		this.limitPopulation = limitPopulation;
+	}
+	public int getLimitPopulation() {
+		return limitPopulation;
+	}
+	public void setDelayMs(int delayMs) {
+		if (delayMs < 0) throw new RuntimeException("Delay must be >= 0");
+		this.delayMs = delayMs;
+	}
+	public int getDelayMs() {
+		return delayMs;
+	}
 }

@@ -22,6 +22,8 @@ import org.ratson.pentagrid.Transform;
 import org.ratson.pentagrid.Util;
 import org.ratson.pentagrid.fields.SimpleMapField;
 import org.ratson.pentagrid.gui.PoincarePanel.PointDbl;
+import org.ratson.pentagrid.gui.poincare_panel.PoincarePanelEvent;
+import org.ratson.pentagrid.gui.poincare_panel.PoincarePanelListener;
 import org.ratson.util.Function1;
 
 public class FarPoincarePanel extends JComponent {
@@ -45,6 +47,7 @@ public class FarPoincarePanel extends JComponent {
 	public Color clrGrid= Color.LIGHT_GRAY;	
 	public Color clrExportBg = Color.WHITE;
 	private int margin = 30;
+	private ArrayList<PoincarePanelListener> panelEventListeners = new ArrayList<PoincarePanelListener>();
 
 	/**Represents one cell, shown on display. Stores path to this cell, its relative transformation and state*/
 	static final class VisibleCell{
@@ -266,11 +269,13 @@ public class FarPoincarePanel extends JComponent {
 	public void rebaseRelative( Path offset ){
 		if (offset.isRoot()) return; //nothing to do
 		OrientedPath newCenter = viewCenter.attach( offset );
+		PoincarePanelEvent e = new PoincarePanelEvent(viewCenter, newCenter);
 		Transform offsetTfm = PathNavigation.getTransformation( offset );
 		viewCenter = newCenter;
 		viewTransform = viewTransform.mul( offsetTfm );
 		rebuildVisibleCells();
 		update();
+		fireOriginChanged(e);
 	}
 	/**adjust view center, setting it to the cell, nearest to the geometrical center of the Poincare circle*/
 	public void adjustViewCenter(){
@@ -292,5 +297,14 @@ public class FarPoincarePanel extends JComponent {
 		g.translate(size.width/2, size.height/2);
 		paintContents( g, size );
 		return img;
+	}
+
+	public void AddPoincarePanelListener(
+			PoincarePanelListener listener) {
+		panelEventListeners.add( listener );
+	}
+	
+	private void fireOriginChanged( PoincarePanelEvent e ){
+		for( PoincarePanelListener l: panelEventListeners ) l.originChanged(e);
 	}
 }

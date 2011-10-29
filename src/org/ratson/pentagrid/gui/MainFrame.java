@@ -39,6 +39,8 @@ import org.ratson.pentagrid.RuleSyntaxException;
 import org.ratson.pentagrid.TotalisticRule;
 import org.ratson.pentagrid.Util;
 import org.ratson.pentagrid.fields.SimpleMapField;
+import org.ratson.pentagrid.gui.poincare_panel.PoincarePanelEvent;
+import org.ratson.pentagrid.gui.poincare_panel.PoincarePanelListener;
 import org.ratson.util.Pair;
 
 public class MainFrame extends JFrame implements NotificationReceiver {
@@ -114,14 +116,13 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				case KeyEvent.VK_DOWN : panel.offsetView(0, 0.1); break;
 				case KeyEvent.VK_LEFT : panel.offsetView(0.1, 0); break;
 				case KeyEvent.VK_RIGHT : panel.offsetView(-0.1, 0); break;
-				case KeyEvent.VK_OPEN_BRACKET : panel.rotateView( -0.03); break;
-				case KeyEvent.VK_CLOSE_BRACKET : panel.rotateView( 0.03); break;
+				case KeyEvent.VK_OPEN_BRACKET : panel.rotateView( -0.06); break;
+				case KeyEvent.VK_CLOSE_BRACKET : panel.rotateView( 0.06); break;
 				case KeyEvent.VK_C : { panel.centerView(); break;}
 				case KeyEvent.VK_A : panel.antiAlias = ! panel.antiAlias; panel.repaint(); break;
 				case KeyEvent.VK_G : panel.showGrid = ! panel.showGrid; panel.repaint(); break;
 				case KeyEvent.VK_ENTER: toggleRunning(); break;
 				}
-				updateLocationInfo(); //TODO: do this via event listeners
 			}
 		});
 		panel.addMouseListener(new MouseAdapter(){
@@ -144,6 +145,10 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				}catch( Exception err ){
 					System.err.println("Error:"+err.getMessage());
 				}
+			}});
+		panel.AddPoincarePanelListener( new PoincarePanelListener(){
+			public void originChanged(PoincarePanelEvent e) {
+				updateLocationInfo();
 			}});
 	}
 
@@ -227,6 +232,13 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		frm.setSize( 600, 600 );
 		frm.setVisible( true );
 	}
+	
+	public void startEvaluationFast(){
+		if( evaluationThread != null ) return;
+		evaluationThread = new EvaluationRunner(world, rule, this);
+		evaluationThread.setDelayMs(0);
+		evaluationThread.start();		
+	}
 	public void startEvaluation(){
 		if( evaluationThread != null ) return;
 		evaluationThread = new EvaluationRunner(world, rule, this);
@@ -276,7 +288,8 @@ public class MainFrame extends JFrame implements NotificationReceiver {
             if ( ! file.getName().contains("."))
             	file = new File( file.getParentFile(), file.getName()+".png");
             try {
-				ImageIO.write( panel.exportImage(new Dimension(settings.exportImageSize, settings.exportImageSize), settings.exportAntiAlias ),
+            	int s = settings.exportImageSize;
+				ImageIO.write( panel.exportImage(new Dimension(s, s), settings.exportAntiAlias ),
 						"PNG", file);
 			} catch (IOException err) {
 				JOptionPane.showMessageDialog(this, err.getMessage(), "Can not save file", JOptionPane.ERROR_MESSAGE);
@@ -285,6 +298,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	}
 	private void saveFieldData( File f, Field fld ) throws FileNotFoundException, IOException{
 		ObjectOutputStream oos = new ObjectOutputStream( new GZIPOutputStream( new FileOutputStream( f )));
+		
 		oos.writeObject( fld );
 		oos.writeObject( rule);
 		oos.close();
