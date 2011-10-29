@@ -191,9 +191,9 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 			stopEvaluation();
 			wasRunning = true;
 		}
-		panel.update();
 		world.setCells( cells );
 		world.setFieldState(0);
+		panel.update();
 		updateFieldInfo();
 		if (wasRunning) startEvaluation();
 	}

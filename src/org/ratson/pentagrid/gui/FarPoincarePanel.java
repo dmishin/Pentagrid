@@ -26,7 +26,7 @@ import org.ratson.util.Function1;
 public class FarPoincarePanel extends JComponent {
 	OrientedPath viewCenter = new OrientedPath(Path.getRoot(), 0);
 	VisibleCell[] visibleCells = null;
-	int visibleRadius = 4;
+	int visibleRadius = 5;
 	private Transform viewTransform = (new Transform()).setEye();
 	private SimpleMapField field = null;
 
@@ -223,9 +223,13 @@ public class FarPoincarePanel extends JComponent {
 	/**Move view to the origin*/
 	public void centerView(){
 		viewTfmModifCounter = 0;
+		viewCenter = new OrientedPath( Path.getRoot(), 0);
+		rebuildVisibleCells();
+		updateCellsState();
 		setView( viewTransform.setEye() );
 	}
-	/**Given the point in th view coordinates, return path to the cell, containing it*/
+	/**Given the point in th view coordinates, return path to the cell, containing it
+	 * Path is relative to the view center*/
 	public Path mouse2cellPathRel( int x, int y ){
 		Dimension sz = getSize();		
 		double scale = getScale( sz );
@@ -251,11 +255,14 @@ public class FarPoincarePanel extends JComponent {
 		return viewCenter.attach(relativePath).path;
 	}
 	/**Put view center to the specified cell, and reset view offset*/
-	public void rebase( OrientedPath newCenter ){
+	public void setOrigin( OrientedPath newCenter ){
 		viewCenter = newCenter;
 		rebuildVisibleCells();
 		update();
-		centerView();
+		setView( viewTransform.setEye() );
+	}
+	public OrientedPath getOrigin(){
+		return viewCenter;
 	}
 	/**Shift view origin by the given offset, and adjust transformation so that view does not change*/
 	public void rebaseRelative( Path offset ){
@@ -270,7 +277,11 @@ public class FarPoincarePanel extends JComponent {
 	/**adjust view center, setting it to the cell, nearest to the geometrical center of the Poincare circle*/
 	public void adjustViewCenter(){
 		double [] point = new double[]{ 0,0,1 };		
-		Path centerPath = PathNavigation.point2path(viewTransform.hypInverse().tfmVector(point)); //path to the cell at the geometric center
-		rebaseRelative( centerPath );
+		try{
+			Path centerPath = PathNavigation.point2path(viewTransform.hypInverse().tfmVector(point)); //path to the cell at the geometric center
+			rebaseRelative( centerPath );
+		}catch( RuntimeException err ){
+			System.err.println( "Failed to adjust path: "+err.getMessage() );
+		}
 	}
 }
