@@ -14,8 +14,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -29,6 +31,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.ratson.pentagrid.Clusterizer;
 import org.ratson.pentagrid.DayNightRule;
 import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.OrientedPath;
@@ -51,6 +54,29 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	private EvaluationRunner evaluationThread=null;
 	private Settings settings = new Settings();
 	private JLabel lblFieldInfo, lblLocationInfo;
+	private WaypointNavigator waypointNavigator=new WaypointNavigator();
+
+	class WaypointNavigator{
+		ArrayList<Path> waypoints = new ArrayList<Path>();
+		int currentPosition = 0;
+		public void clear(){
+			waypoints.clear();
+			currentPosition = 0;
+		}
+		public void add( Path p ){
+			waypoints.add( p );
+		}
+		private void navigateBy( int offset ){
+			if (waypoints.size()==0) return;
+			currentPosition = org.ratson.util.Util.mod(currentPosition+offset, waypoints.size());
+			goToCell( waypoints.get(currentPosition));
+			System.out.println("Showing waypoint "+currentPosition+" of "+waypoints.size());
+		}
+		public void next(){ navigateBy(1); };
+		public void previous(){ navigateBy(-1); }
+		public void current() { navigateBy(0);	};
+	}
+	
 	private void createUI(){
 		 Box topBox = Box.createVerticalBox();
 		 panel = new FarPoincarePanel( world );
@@ -60,6 +86,10 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		 topBox.add( lblLocationInfo );
 		 getContentPane().add( panel );
 		 getContentPane().add( topBox, BorderLayout.NORTH );
+	}
+	/**Show a cell in the view*/
+	public void goToCell(Path path) {
+		panel.setOrigin( new OrientedPath(path, 0));
 	}
 	private void updateFieldInfo(){
 		String infoStr = String.format("Population:%d State:%d Rule:%s", world.population(), world.getFieldState(), rule);
@@ -105,6 +135,15 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 					break;
 				case 'u':
 					panel.update();
+					break;
+				case 'z':
+					doClusterize();
+					break;
+				case '[':
+					waypointNavigator.next();
+					break;
+				case ']':
+					waypointNavigator.previous();
 					break;
 				}
 			}
@@ -152,6 +191,17 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 			}});
 	}
 
+	/**Find clusters in the field, and set waypoints to them*/
+	protected void doClusterize() {
+		waypointNavigator.clear();
+		System.out.println("Clusterizing...");
+		Clusterizer c = new Clusterizer( world );
+		System.out.println("Done. Found "+c.clusters.size()+" clusters");
+		for( Clusterizer.Cluster cl: c.clusters ){
+			waypointNavigator.add( cl.cells.get(0) );
+		}
+		waypointNavigator.current();
+	}
 	protected void doEditSettings() {
 		Settings settingsCopy = (Settings)(settings.clone());
 		SettingsDialog sd = new SettingsDialog(settingsCopy);

@@ -252,10 +252,13 @@ public class FarPoincarePanel extends JComponent {
 	}
 	/**Put view center to the specified cell, and reset view offset*/
 	public void setOrigin( OrientedPath newCenter ){
+		if ( newCenter.equals(viewCenter)) return;
+		PoincarePanelEvent event = new PoincarePanelEvent(viewCenter, newCenter);
 		viewCenter = newCenter;
 		rebuildVisibleCells();
 		setView( viewTransform.setEye() );
 		update();
+		fireOriginChanged( event );
 	}
 	public OrientedPath getOrigin(){
 		return viewCenter;
