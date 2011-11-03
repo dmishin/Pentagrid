@@ -100,6 +100,20 @@ public final class Transform {
 				getAt(2,0)*xyt[0]+getAt(2,1)*xyt[1]+getAt(2,2)*xyt[2],
 		};
 	}
+	/**Result of applying transform to the vector (0,0,1)*/
+	public double[] tfmZeroVector(){
+		return new double[]{
+				getAt(0,2),
+				getAt(1,2),
+				getAt(2,2)};
+	}
+	/**Result of applying inverse transform to the vector (0,0,1)*/
+	public double[] tfmZeroVectorInv(){
+		return new double[]{
+				- getAt(2,0),
+				- getAt(2,1),
+				getAt(2,2)};
+	}
 	
 	@Override
 	public String toString() {

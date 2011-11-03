@@ -7,11 +7,9 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import javax.swing.JComponent;
 
@@ -21,11 +19,11 @@ import org.ratson.pentagrid.PathNavigation;
 import org.ratson.pentagrid.Transform;
 import org.ratson.pentagrid.Util;
 import org.ratson.pentagrid.fields.SimpleMapField;
-import org.ratson.pentagrid.gui.PoincarePanel.PointDbl;
 import org.ratson.pentagrid.gui.poincare_panel.PoincarePanelEvent;
 import org.ratson.pentagrid.gui.poincare_panel.PoincarePanelListener;
 import org.ratson.util.Function1;
 
+@SuppressWarnings("serial")
 public class FarPoincarePanel extends JComponent {
 	private OrientedPath viewCenter = new OrientedPath(Path.getRoot(), 0);
 	private ArrayList<VisibleCell> visibleCells = new ArrayList<FarPoincarePanel.VisibleCell>();
@@ -276,9 +274,8 @@ public class FarPoincarePanel extends JComponent {
 	}
 	/**adjust view center, setting it to the cell, nearest to the geometrical center of the Poincare circle*/
 	public void adjustViewCenter(){
-		double [] point = new double[]{ 0,0,1 };		
 		try{
-			Path centerPath = PathNavigation.point2path(viewTransform.hypInverse().tfmVector(point)); //path to the cell at the geometric center
+			Path centerPath = PathNavigation.point2path(viewTransform.tfmZeroVectorInv()); //path to the cell at the geometric center
 			rebaseRelative( centerPath );
 		}catch( RuntimeException err ){
 			System.err.println( "Failed to adjust path: "+err.getMessage() );

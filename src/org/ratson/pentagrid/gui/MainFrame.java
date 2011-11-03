@@ -66,7 +66,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		lblFieldInfo.setText( infoStr );
 	}
 	private void updateLocationInfo(){
-		String locStr = String.format( "Location: "+panel.getOrigin());
+		String locStr = "Location: "+panel.getOrigin().path;
 		lblLocationInfo.setText( locStr );		
 	}
 	
