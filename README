@@ -27,6 +27,9 @@ Description:
     View:
 	   g - toggle grid visibility
 	   a - toggle anti-aliasing
+	   
+	   z - search for the cell clusters
+	   o,p - go to the next/previous cell cluster (from the found previously) 
 
 	Files:
 	   s - save field data
@@ -38,13 +41,16 @@ Rules:
     Automation is 2-state (1 and 0), and totalistic. The latter means that the next state of the cell depends only on sum of states of its neighbores.
 	This program uses 10-cell neighborhood (analogous to the Moore neighborhood in regular CA).
 	Rules are specified as strings, like "B3/S23" which means:
-	    Cell "borns" (i.e. changes state from 0 to 1), if it has 3 alive neighbors.
-	    Cell "lives" (i.e. holds state 1), if it has 2 or 3 alive neighbors.
+	    Cell "born" (i.e. changes state from 0 to 1), if it has 3 alive neighbors.
+	    Cell "survive" (i.e. holds state 1), if it has 2 or 3 alive neighbors.
 	    In the all other cases, cell "dies" (its state becomes 0).
 	
 	To denote 10 neighbors, use letter "a". Rule strings are case-insensitive, "/" is optional. 
 
-	Rules, containing B0, can not be simulated by this program, since they produce infinite amounts of alive cells.
+	Generally, rules, containing B0, can not be simulated by this program, since they produce infinite amounts of alive cells.
+	Exception is Day/Night class rules, which have B0, but not have S10. In such rules, empty space changes to filled space,
+	and filled space changes to empty space back. This allows to represent such rules as combination of 2 normal rules.
+	Interestingly, there are rules in this class, that support gliders and not explosive. 
 
 Technical characteristics:
 
@@ -52,6 +58,4 @@ Technical characteristics:
     In addition to this, algorithms are not very memory-effective. On default settings, you can catch memory exception when cell count reaches 150'000.
     By increasing Java heap space, you can increase this limit to 300-400k cells. However, simulation is very slow for such sizes.
 	
-	Viewer has its own limitations: 
-	 - viewer always draws all cells. This is very slow for big fields.
-	 - viewer uses floating-point numbers to store view transformation matrix. As consequence, it can't go far away from the center. Use 'c' hotkey, if you have gone too far and stuck.
+	Viewer now supports infinite-sized field!

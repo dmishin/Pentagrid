@@ -67,7 +67,7 @@ public class Clusterizer {
 	private static ArrayList<Path> createLevel2Neighbores() {
 		final 
 		ArrayList<Path> rval = new ArrayList<Path>();
-		Util.forField(2, new Function1<Path, Boolean>() {
+		Util.forField(3, new Function1<Path, Boolean>() {
 			public Boolean call(Path arg) { 
 				if( !arg.isRoot() ) rval.add( arg ); 
 				return true; 

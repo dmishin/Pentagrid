@@ -139,10 +139,10 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				case 'z':
 					doClusterize();
 					break;
-				case '[':
+				case 'o':
 					waypointNavigator.next();
 					break;
-				case ']':
+				case 'p':
 					waypointNavigator.previous();
 					break;
 				}
@@ -195,7 +195,10 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	protected void doClusterize() {
 		waypointNavigator.clear();
 		System.out.println("Clusterizing...");
-		Clusterizer c = new Clusterizer( world );
+		Clusterizer c = null;
+		synchronized( world ){
+			c = new Clusterizer( world );
+		}
 		System.out.println("Done. Found "+c.clusters.size()+" clusters");
 		for( Clusterizer.Cluster cl: c.clusters ){
 			waypointNavigator.add( cl.cells.get(0) );

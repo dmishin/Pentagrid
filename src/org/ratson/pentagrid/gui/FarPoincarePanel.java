@@ -219,10 +219,16 @@ public class FarPoincarePanel extends JComponent {
 	/**Move view to the origin*/
 	public void centerView(){
 		viewTfmModifCounter = 0;
-		viewCenter = new OrientedPath( Path.getRoot(), 0);
+		OrientedPath center = new OrientedPath( Path.getRoot(), 0);
+		PoincarePanelEvent event = null;
+		if ( ! viewCenter.path.isRoot() )
+			event = new PoincarePanelEvent(viewCenter, center);
+		viewCenter = center;
 		rebuildVisibleCells();
 		updateCellsState();
 		setView( viewTransform.setEye() );
+		if (event != null)
+			fireOriginChanged( event );
 	}
 	/**Given the point in th view coordinates, return path to the cell, containing it
 	 * Path is relative to the view center*/
