@@ -176,10 +176,6 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 						}else{
 							System.err.println("Non-point");
 						}
-					}else{
-						Path point = panel.mouse2cellPathRel(arg0.getX(), arg0.getY());
-						//OrientedPath o = new OrientedPath(point, 0);
-						panel.rebaseRelative( point );
 					}
 				}catch( Exception err ){
 					System.err.println("Error:"+err.getMessage());
