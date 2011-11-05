@@ -95,20 +95,23 @@ public class JSONSerializer {
 		else 
 			map.setFieldState(state);
 		
-		if ( r == null ) throw new FileFormatException("Rule not specified");
+		if ( r == null ) {
+			r = new Rule(new int[]{3}, new int[]{2,3});
+			System.err.println( "Rule not specified, using default:"+r.getCode() );
+		}
 		return new Pair<SimpleMapField, TotalisticRule>( map, r );
 	}
 	
 	private static void readCells(JsonParser jp, SimpleMapField map) throws FileFormatException, JsonParseException, IOException {
 		assertToken(jp.getCurrentToken(), JsonToken.START_ARRAY);
 		while( jp.nextToken() != JsonToken.END_ARRAY){
-			//must be an object: cell record
-			assertToken(jp.getCurrentToken(), JsonToken.START_OBJECT);
 			readCell( jp, map );
 		}
 	}
 	
 	private static void readCell(JsonParser jp, SimpleMapField map) throws FileFormatException, JsonParseException, IOException {
+		//must be an object: cell record
+		assertToken(jp.getCurrentToken(), JsonToken.START_OBJECT);
 		int state = -1;
 		Path p = null;
 		while ( jp.nextToken() != JsonToken.END_OBJECT){
@@ -119,7 +122,7 @@ public class JSONSerializer {
 			}else if( "path".equals(name)){
 				p = readPath( jp );
 			}else{
-				System.err.println("Unexpected tag inthe cell");
+				System.err.println("Unexpected tag in the cell:"+name);
 				jp.skipChildren();
 			}
 		}
