@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("serial")
 public class Rule implements TotalisticRule, Serializable {
 
 	private boolean[] born = new boolean[11];
