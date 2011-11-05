@@ -37,7 +37,7 @@ public class FarPoincarePanel extends JComponent {
 	private Shape gridShape = null;
 	private GridPainter gridDrawer = new GridPainter( visibleRadius );
 
-	private int viewTfmModifCounter = 0; //how many time view transform was modified.
+	private int viewTfmModifCounter = 0; //how many times view transform was modified.
 	private int fixTransformEvery = 100;//fix view transformation matrix every n steps
 	
 	public Color clrCell = Color.BLUE;
