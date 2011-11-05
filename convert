@@ -1,0 +1,2 @@
+#!/bin/sh
+java -cp /home/dim/workspace/Pentagrid/bin:/home/dim/Prog/jackson-core-lgpl-1.9.1.jar org.ratson.pentagrid.json.FileFormatConverter "$@"
