@@ -27,14 +27,16 @@ TODO:
 [] Make settings persistent
 [] Add help (now only README available)
 
+[ ] Smooth movement animation
+
 [+] Save rule with field
-[] Export and import field in some well-defined format
+[+] Export and import field in some well-defined format. Done: using JSON format via Jackson library.
 [+] Better file chooser dialogs: default file types and better title
 
 [+] Unlimited navigation
-[ ]     When using unlimited navigation, show marks for the far-away cells.
-[ ] Search groups of the cells
-[ ]     Jump to the next cell group.  
+[ ]     When using unlimited navigation, show marks for the far-away cells. (This will be slow...)
+[+] Search groups of the cells
+[+]     Jump to the next cell group.  
 
 [?] Automatically search and detect figures
 

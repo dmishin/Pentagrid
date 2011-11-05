@@ -37,4 +37,9 @@ public class DayNightRule implements TotalisticRule, Serializable {
 		default: throw new RuntimeException("Bad world state:"+prevFieldState);
 		}
 	}
+
+	/**Returns simple rule, that is equivalent to the DayNight rule*/ 
+	public Rule getUnderlyingRule() {
+		return baseRule;
+	}
 }

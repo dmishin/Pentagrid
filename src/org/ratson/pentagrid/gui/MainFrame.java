@@ -1,22 +1,16 @@
 package org.ratson.pentagrid.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -31,6 +25,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.codehaus.jackson.JsonEncoding;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonParser;
 import org.ratson.pentagrid.Clusterizer;
 import org.ratson.pentagrid.DayNightRule;
 import org.ratson.pentagrid.Field;
@@ -44,8 +42,11 @@ import org.ratson.pentagrid.Util;
 import org.ratson.pentagrid.fields.SimpleMapField;
 import org.ratson.pentagrid.gui.poincare_panel.PoincarePanelEvent;
 import org.ratson.pentagrid.gui.poincare_panel.PoincarePanelListener;
+import org.ratson.pentagrid.json.FileFormatException;
+import org.ratson.pentagrid.json.JSONSerializer;
 import org.ratson.util.Pair;
 
+@SuppressWarnings("serial")
 public class MainFrame extends JFrame implements NotificationReceiver {
 	
 	private SimpleMapField world = new SimpleMapField();
@@ -344,30 +345,29 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				JOptionPane.showMessageDialog(this, err.getMessage(), "Can not save file", JOptionPane.ERROR_MESSAGE);
 			}
 		}
+	}	
+	private void saveFieldJackson( File f, Field fld ) throws IOException{
+		GZIPOutputStream gzout = new GZIPOutputStream( new FileOutputStream( f ));
+		JsonFactory jsonFactory = new JsonFactory(); // or, for data binding, org.codehaus.jackson.mapper.MappingJsonFactory 
+		JsonGenerator jg = jsonFactory.createJsonGenerator(gzout, JsonEncoding.UTF8); // or Stream, Reader
+		JSONSerializer.writeField( jg, fld, rule );
+		jg.close();
+		gzout.close();
 	}
-	private void saveFieldData( File f, Field fld ) throws FileNotFoundException, IOException{
-		ObjectOutputStream oos = new ObjectOutputStream( new GZIPOutputStream( new FileOutputStream( f )));
+	private Pair<SimpleMapField, TotalisticRule> loadFieldJson( File f ) throws FileNotFoundException, IOException, FileFormatException{
+		GZIPInputStream gzout = new GZIPInputStream( new FileInputStream( f ));
 		
-		oos.writeObject( fld );
-		oos.writeObject( rule);
-		oos.close();
+		JsonFactory jsonFactory = new JsonFactory(); // or, for data binding, org.codehaus.jackson.mapper.MappingJsonFactory
+		JsonParser jp = jsonFactory.createJsonParser(gzout);
+		Pair<SimpleMapField, TotalisticRule> rval = JSONSerializer.readField( jp );
+		jp.close();
+		gzout.close();
+		return rval;
 	}
-	private Pair<SimpleMapField, TotalisticRule> loadFieldData( File f ) throws FileNotFoundException, IOException, ClassNotFoundException{
-		ObjectInputStream ois = new ObjectInputStream(new GZIPInputStream(new FileInputStream( f )));
-		Object o = ois.readObject();
-		Object rule = ois.readObject();
-		ois.close();
-		try{
-			return new Pair<SimpleMapField, TotalisticRule>( (SimpleMapField)o, (TotalisticRule) rule );
-		}catch(ClassCastException e){
-			throw new IOException("File has wrong format");
-		}
-	}
-	
 	private void ensureSaveFileChooser(){
 		if (fieldFileChooser != null ) return;
 		fieldFileChooser = new JFileChooser();
-		FileFilter filter = new FileNameExtensionFilter("Gzipped serialized Java object (*.sgz)", "sgz");
+		FileFilter filter = new FileNameExtensionFilter("Gzipped JSON object (*.jsongz)", "jsongz");
 		fieldFileChooser.addChoosableFileFilter(filter);
 		fieldFileChooser.setFileFilter( filter );
 	}
@@ -376,9 +376,9 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		if (fieldFileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = fieldFileChooser.getSelectedFile();
             if ( ! file.getName().contains("."))
-            	file = new File( file.getParentFile(), file.getName()+".sgz");
+            	file = new File( file.getParentFile(), file.getName()+".jsongz");
             try {
-				saveFieldData(file, world);
+            	saveFieldJackson(file, world);
 			} catch (Exception err) {
 				JOptionPane.showMessageDialog(this, err.getMessage(), "Error writing file", JOptionPane.ERROR_MESSAGE);
 			}
@@ -389,10 +389,11 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		if ( fieldFileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = fieldFileChooser.getSelectedFile();
             try {
-				Pair<SimpleMapField, TotalisticRule> world_rule= loadFieldData(file);
+            	Pair<SimpleMapField, TotalisticRule> world_rule= loadFieldJson(file);
 				setWorld( world_rule.left );
 				setRule( world_rule.right );
 			} catch (Exception err) {
+				//err.printStackTrace();
 				JOptionPane.showMessageDialog(this, err.getMessage(), "Can not load file", JOptionPane.ERROR_MESSAGE);
 			}
 		}
