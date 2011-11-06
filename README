@@ -4,8 +4,8 @@ Description:
   This program is a simulator for totalistic 2-state cellular automations on hyperbolic plane (Lobachevsky plane).
   Simply speaking, it's a Life game in the hyperbolic space.
   
-  In the current version, it only supports tesselation of plane with equal pentagons, 4 pentagons touching in each vertex.
-   
+  In the current version, it only supports tiling of plane with equal pentagons, 4 pentagons touching in each vertex.
+
  
  Usage:
     To open the GUI, you should execute class org.ratson.pentagrid.gui.MainFrame.
@@ -59,3 +59,6 @@ Technical characteristics:
     By increasing Java heap space, you can increase this limit to 300-400k cells. However, simulation is very slow for such sizes.
 	
 	Viewer now supports infinite-sized field!
+	
+Compilation:
+	Depends on Jackson JSON library, used for data serializaiton. Only core library is needed (object mapper is not used).
