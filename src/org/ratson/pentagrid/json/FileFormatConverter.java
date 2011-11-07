@@ -6,16 +6,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.OutputStreamWriter;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.codehaus.jackson.JsonEncoding;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
 import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.TotalisticRule;
 import org.ratson.pentagrid.fields.SimpleMapField;
 import org.ratson.util.Pair;
+
+import com.google.gson.stream.JsonWriter;
 
 public class FileFormatConverter {
 	private static Pair<SimpleMapField, TotalisticRule> loadFieldData( File f ) throws FileNotFoundException, IOException, ClassNotFoundException{
@@ -29,20 +29,22 @@ public class FileFormatConverter {
 			throw new IOException("File has wrong format");
 		}
 	}
-	private static void saveFieldJackson( File f, Field fld, TotalisticRule rule ) throws IOException{
+	private static void saveFieldGson( File f, Field fld, TotalisticRule rule ) throws IOException{
 		GZIPOutputStream gzout = new GZIPOutputStream( new FileOutputStream( f ));
-		JsonFactory jsonFactory = new JsonFactory(); // or, for data binding, org.codehaus.jackson.mapper.MappingJsonFactory 
-		JsonGenerator jg = jsonFactory.createJsonGenerator(gzout, JsonEncoding.UTF8); // or Stream, Reader
-		JSONSerializer.writeField( jg, fld, rule );
-		jg.close();
-		gzout.close();
+		JsonWriter jsw = new JsonWriter(new OutputStreamWriter(gzout));
+		try{
+			GSONSerializer.writeField( jsw, fld, rule );
+		}finally{
+			jsw.close();
+			gzout.close();
+		}
 	}
 	
 	public static boolean convertFile( File sgzFile, File jsongzFile ){
 		try {
 			Pair<SimpleMapField, TotalisticRule> fld_rule = loadFieldData( sgzFile );
 			
-			saveFieldJackson(jsongzFile, fld_rule.left, fld_rule.right);
+			saveFieldGson(jsongzFile, fld_rule.left, fld_rule.right);
 			return true;
 		} catch (FileNotFoundException e) {
 			System.err.println( "File not found "+e.getMessage());

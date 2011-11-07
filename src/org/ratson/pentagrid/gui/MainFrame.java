@@ -27,10 +27,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-import org.codehaus.jackson.JsonEncoding;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonParser;
 import org.ratson.pentagrid.Clusterizer;
 import org.ratson.pentagrid.DayNightRule;
 import org.ratson.pentagrid.Field;
@@ -46,7 +42,6 @@ import org.ratson.pentagrid.gui.poincare_panel.PoincarePanelEvent;
 import org.ratson.pentagrid.gui.poincare_panel.PoincarePanelListener;
 import org.ratson.pentagrid.json.FileFormatException;
 import org.ratson.pentagrid.json.GSONSerializer;
-import org.ratson.pentagrid.json.JSONSerializer;
 import org.ratson.util.Pair;
 
 import com.google.gson.stream.JsonReader;
@@ -352,14 +347,6 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 			}
 		}
 	}	
-	private void saveFieldJackson( File f, Field fld ) throws IOException{
-		GZIPOutputStream gzout = new GZIPOutputStream( new FileOutputStream( f ));
-		JsonFactory jsonFactory = new JsonFactory(); // or, for data binding, org.codehaus.jackson.mapper.MappingJsonFactory 
-		JsonGenerator jg = jsonFactory.createJsonGenerator(gzout, JsonEncoding.UTF8); // or Stream, Reader
-		JSONSerializer.writeField( jg, fld, rule );
-		jg.close();
-		gzout.close();
-	}
 	private void saveFieldGson( File f, Field fld ) throws IOException{
 		GZIPOutputStream gzout = new GZIPOutputStream( new FileOutputStream( f ));
 		JsonWriter jsw = new JsonWriter(new OutputStreamWriter(gzout));
@@ -369,16 +356,6 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 			jsw.close();
 			gzout.close();
 		}
-	}
-	private Pair<SimpleMapField, TotalisticRule> loadFieldJson( File f ) throws FileNotFoundException, IOException, FileFormatException{
-		GZIPInputStream gzout = new GZIPInputStream( new FileInputStream( f ));
-		
-		JsonFactory jsonFactory = new JsonFactory(); // or, for data binding, org.codehaus.jackson.mapper.MappingJsonFactory
-		JsonParser jp = jsonFactory.createJsonParser(gzout);
-		Pair<SimpleMapField, TotalisticRule> rval = JSONSerializer.readField( jp );
-		jp.close();
-		gzout.close();
-		return rval;
 	}
 	private Pair<SimpleMapField, TotalisticRule> loadFieldGson( File f ) throws FileNotFoundException, IOException, FileFormatException{
 		GZIPInputStream gzout = new GZIPInputStream( new FileInputStream( f ));
