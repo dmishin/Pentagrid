@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.Serializable;
 
 /**Stores application settings*/
+@SuppressWarnings("serial")
 public class Settings implements Serializable, Cloneable{
 	public int randomFieldRadius = 7;
 	public double randomFillPercent = 0.5;

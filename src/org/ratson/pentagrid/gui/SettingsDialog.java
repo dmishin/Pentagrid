@@ -2,29 +2,25 @@ package org.ratson.pentagrid.gui;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import java.awt.GridBagLayout;
-import javax.swing.BoxLayout;
-import javax.swing.border.TitledBorder;
-import javax.swing.Box;
-import javax.swing.JLabel;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import javax.swing.JTextField;
-import java.awt.Dialog.ModalExclusionType;
-import java.awt.Dialog.ModalityType;
-import javax.swing.AbstractAction;
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import java.awt.event.ActionListener;
-import javax.swing.JCheckBox;
 import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 
+@SuppressWarnings("serial")
 public class SettingsDialog extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();

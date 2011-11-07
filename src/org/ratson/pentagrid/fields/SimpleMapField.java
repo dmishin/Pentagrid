@@ -12,6 +12,7 @@ import org.ratson.pentagrid.TotalisticRule;
 
 /**Field, storing only living cells in one single map.*/
 public final class SimpleMapField extends Field{
+	private static final long serialVersionUID = 1L;
 	//maps cell to the cell state
 	private Map<Path, CellRecord> data = new HashMap<Path, CellRecord>();
 	private Map<Path, CellRecord> newCells = new HashMap<Path, CellRecord>();

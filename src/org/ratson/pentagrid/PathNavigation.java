@@ -180,9 +180,6 @@ public class PathNavigation {
 		double[] xyt1 = TFM_I[index-1].hypInverse().tfmVector(xyt);
 		return new Pair<double[], Integer>( xyt1, index );
 	}
-	private static double pointInv( double[] p ){
-		return org.ratson.util.Util.sqr(p[2]) - org.ratson.util.Util.sqr(p[0]) - org.ratson.util.Util.sqr(p[1]);
-	}
 	/**Returns index if the sub-area (i.e. next value in the item path), where the point is located. 
 	 * Prerequisite: point is *not* in the central pentagon;
 	 *               point has normalized coordinates 

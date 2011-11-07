@@ -55,7 +55,6 @@ public class RuleSearcher {
 	}
 	
 	Result tryRule( TotalisticRule r, int fieldSize ){
-		Path root = Path.getRoot();
 		double p = 0.5;
 		
 		ArrayField field = new ArrayField();
@@ -127,7 +126,6 @@ public class RuleSearcher {
 
 	private int detectCycle( Field field, TotalisticRule rule) {
 		Path[] original = field.getAliveCellsArray();
-		Path[] current = original;
 		int populationLimit = original.length * 10;
 		for( int i = 1; i < 24; ++ i){
 			field.evaluate( rule );
@@ -137,7 +135,6 @@ public class RuleSearcher {
 			sortCells(next);
 			if (Arrays.equals( next, original))
 				return i;
-			current = next;
 		}
 		return NO_PERIOD;
 	}

@@ -3,7 +3,7 @@ package org.ratson.pentagrid;
 import java.io.Serializable;
 
 public class DayNightRule implements TotalisticRule, Serializable {
-
+	private static final long serialVersionUID = 1L;
 	private Rule baseRule;
 	private Rule[] subRules;
 	

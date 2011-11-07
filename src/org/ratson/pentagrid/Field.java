@@ -9,6 +9,7 @@ import java.util.Arrays;
  *
  */
 public abstract class Field implements Serializable{
+	private static final long serialVersionUID = 1L;
 	protected int fieldState=0;
 	/**Global field state. Used by the day.night rules*/
 	public final int getFieldState(){ return fieldState; };

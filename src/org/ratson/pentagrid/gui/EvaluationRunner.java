@@ -1,9 +1,6 @@
 package org.ratson.pentagrid.gui;
 
-import java.util.List;
-
 import org.ratson.pentagrid.Field;
-import org.ratson.pentagrid.Path;
 import org.ratson.pentagrid.TotalisticRule;
 
 /**Thread, that runs in background and continuously evaluates the field, when requested*/
