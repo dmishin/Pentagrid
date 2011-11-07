@@ -11,6 +11,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -43,8 +45,12 @@ import org.ratson.pentagrid.fields.SimpleMapField;
 import org.ratson.pentagrid.gui.poincare_panel.PoincarePanelEvent;
 import org.ratson.pentagrid.gui.poincare_panel.PoincarePanelListener;
 import org.ratson.pentagrid.json.FileFormatException;
+import org.ratson.pentagrid.json.GSONSerializer;
 import org.ratson.pentagrid.json.JSONSerializer;
 import org.ratson.util.Pair;
+
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame implements NotificationReceiver {
@@ -354,6 +360,16 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		jg.close();
 		gzout.close();
 	}
+	private void saveFieldGson( File f, Field fld ) throws IOException{
+		GZIPOutputStream gzout = new GZIPOutputStream( new FileOutputStream( f ));
+		JsonWriter jsw = new JsonWriter(new OutputStreamWriter(gzout));
+		try{
+			GSONSerializer.writeField( jsw, fld, rule );
+		}finally{
+			jsw.close();
+			gzout.close();
+		}
+	}
 	private Pair<SimpleMapField, TotalisticRule> loadFieldJson( File f ) throws FileNotFoundException, IOException, FileFormatException{
 		GZIPInputStream gzout = new GZIPInputStream( new FileInputStream( f ));
 		
@@ -363,6 +379,17 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		jp.close();
 		gzout.close();
 		return rval;
+	}
+	private Pair<SimpleMapField, TotalisticRule> loadFieldGson( File f ) throws FileNotFoundException, IOException, FileFormatException{
+		GZIPInputStream gzout = new GZIPInputStream( new FileInputStream( f ));
+		JsonReader jsr = new JsonReader(new InputStreamReader(gzout));
+		try{
+			Pair<SimpleMapField, TotalisticRule> rval = GSONSerializer.readField( jsr );
+			return rval;
+		}finally{
+			jsr.close();
+			gzout.close();
+		}
 	}
 	private void ensureSaveFileChooser(){
 		if (fieldFileChooser != null ) return;
@@ -378,7 +405,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
             if ( ! file.getName().contains("."))
             	file = new File( file.getParentFile(), file.getName()+".jsongz");
             try {
-            	saveFieldJackson(file, world);
+            	saveFieldGson(file, world);
 			} catch (Exception err) {
 				JOptionPane.showMessageDialog(this, err.getMessage(), "Error writing file", JOptionPane.ERROR_MESSAGE);
 			}
@@ -389,7 +416,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		if ( fieldFileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = fieldFileChooser.getSelectedFile();
             try {
-            	Pair<SimpleMapField, TotalisticRule> world_rule= loadFieldJson(file);
+            	Pair<SimpleMapField, TotalisticRule> world_rule= loadFieldGson(file);
 				setWorld( world_rule.left );
 				setRule( world_rule.right );
 			} catch (Exception err) {
