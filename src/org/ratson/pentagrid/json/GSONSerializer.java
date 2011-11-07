@@ -1,6 +1,8 @@
 package org.ratson.pentagrid.json;
 
 import java.io.IOException;
+import java.util.LinkedList;
+
 import org.ratson.pentagrid.DayNightRule;
 import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.Path;
@@ -143,17 +145,17 @@ public class GSONSerializer {
 	
 	private static Path readPath(JsonReader jp) throws FileFormatException, IOException {
 		jp.beginArray();
-		Path rval = readPathRecursively( jp );
+		/*non-recursive reading of the path from JSON array*/
+		LinkedList<Integer> path = new LinkedList<Integer>();
+		while( jp.hasNext() )
+			path.addFirst( jp.nextInt() );
 		jp.endArray();
-		return rval;
+		Path p = Path.getRoot();
+		for( int i : path )
+		    p = p.child( i );
+		if ( ! p.isCorrect() ) throw new FileFormatException("Path is invalid:"+p );
+		return p;
 	}
-	
-	private static Path readPathRecursively(JsonReader jp) throws  IOException {
-		if (! jp.hasNext() ) return Path.getRoot();
-		int idx = jp.nextInt();
-		return readPathRecursively(jp).child(idx);
-	}
-	
 	private static TotalisticRule readRule(JsonReader jp) throws  IOException, FileFormatException {
 		try {
 			String code = jp.nextString();
