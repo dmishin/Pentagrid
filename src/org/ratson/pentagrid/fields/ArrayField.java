@@ -14,6 +14,7 @@ import org.ratson.pentagrid.TotalisticRule;
 
 /**Record, used to store neighbores count*/
 final class NeighborhoodRecord implements Serializable{
+	private static final long serialVersionUID = 1L;
 	public boolean isAlive = false;
 	public int numNeighbores = 0;
 	public NeighborhoodRecord( boolean alive ) {
@@ -23,6 +24,7 @@ final class NeighborhoodRecord implements Serializable{
 
 /**Simpliest implmentation, not using map. It does not allows to store cell state: all cells are either dead or alive*/ 
 public final class ArrayField extends Field{
+	private static final long serialVersionUID = 1L;
 	private Path[] aliveCells = new Path[0];
 
 	@Override

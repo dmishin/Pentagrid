@@ -22,6 +22,7 @@ import org.ratson.pentagrid.Transform;
 import org.ratson.util.Util;
 
 /**Draws cells in the poincare projection*/
+@SuppressWarnings("serial")
 public class PoincarePanel extends JComponent {
 	static final class PointDbl implements Comparable<PointDbl>{
 		/**Coordinates and pseudo-angle*/

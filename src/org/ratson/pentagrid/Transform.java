@@ -2,9 +2,6 @@ package org.ratson.pentagrid;
 
 import java.util.Arrays;
 
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
-
-import org.ratson.util.Util;
 /**Basically - 3x3 matrix*/
 public final class Transform {
 	double [] matrix = null;
