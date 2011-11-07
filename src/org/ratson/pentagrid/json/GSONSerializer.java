@@ -17,19 +17,22 @@ import com.google.gson.stream.JsonWriter;
 
 /**Serializer that uses Google GSON lbrary for reading/writing JSON files*/
 public class GSONSerializer {
+	private final static String STATE = "state";
+	private final static String VERSION = "version";
+	private final static String DESCRIPTION = "description";
+	private static final String RULE = "rule";
+	private static final String CELLS = "cells";
+	private static final String PATH = "path";
+	
 	private GSONSerializer(){};
 	public final static int FORMAT_VERSION = 1;
 	public static void writeField( JsonWriter jg, Field fld, TotalisticRule rule ) throws IOException{
 		jg.beginObject();
-		jg.name( "version" );
-		jg.value( FORMAT_VERSION );
-		jg.name( "description" );
-		jg.value( "Hyperbolic cellular field" );
-		jg.name( "rule" );
-		writeRule( jg, rule );
-		jg.name( "state" ); jg.value( fld.getFieldState() );
-		jg.name( "cells" );		
-		writeCells( jg, fld );
+		jg.name( VERSION );     jg.value( FORMAT_VERSION );
+		jg.name( DESCRIPTION ); jg.value( "Hyperbolic cellular field" );
+		jg.name( RULE );        writeRule( jg, rule );
+		jg.name( STATE );       jg.value( fld.getFieldState() );
+		jg.name( CELLS );		writeCells( jg, fld );
 		jg.endObject();
 	}
 	private static void writeRule( JsonWriter jg, TotalisticRule rule) throws IOException {
@@ -52,9 +55,8 @@ public class GSONSerializer {
 	}
 	private static void writeCell(JsonWriter jg, Path p, int state) throws IOException {
 		jg.beginObject();
-		jg.name( "state" ); jg.value(state);
-		jg.name( "path");
-		writePath( jg, p );
+		jg.name( STATE );   jg.value(state);
+		jg.name( PATH); 	writePath( jg, p );
 		jg.endObject();
 	}
 	private static void writePath(JsonWriter jg, Path p) throws IOException {
@@ -78,18 +80,18 @@ public class GSONSerializer {
 			jp.beginObject();
 			while (jp.hasNext()) {
 				String fieldname = jp.nextName();
-				if ( "version".equals( fieldname ) ){
+				if ( VERSION.equals( fieldname ) ){
 					version = jp.nextInt();
 					if (version > FORMAT_VERSION)
 						System.err.println("Warning: reading future version: "+version +" current verison is "+FORMAT_VERSION);
-				}else if( "description".equals( fieldname ) ){
+				}else if( DESCRIPTION.equals( fieldname ) ){
 					//ignore it
 					jp.skipValue();
-				}else if( "state".equals( fieldname ) ){
+				}else if( STATE.equals( fieldname ) ){
 					state = jp.nextInt();
-				}else if( "rule".equals(fieldname)){
+				}else if( RULE.equals(fieldname)){
 					r = readRule( jp );
-				}else if ("cells".equals(fieldname)){
+				}else if( CELLS.equals(fieldname)){
 					readCells( jp, map );
 				}else{
 					System.err.println("Unexpected field: "+fieldname);
@@ -128,9 +130,9 @@ public class GSONSerializer {
 		Path p = null;
 		while ( jp.hasNext() ){
 			String name = jp.nextName();
-			if( "state".equals(name)){
+			if( STATE.equals(name)){
 				state = jp.nextInt();
-			}else if( "path".equals(name)){
+			}else if( PATH.equals(name)){
 				p = readPath( jp );
 			}else{
 				System.err.println("Unexpected tag in the cell:"+name);
