@@ -175,6 +175,9 @@ public class FarPoincarePanel extends JComponent {
 	private double getScale( Dimension size ){
 		return Math.max( 1, 0.5 * ( Math.min( size.width, size.height ) - margin ) );
 	}
+	public double getScale(){
+		return getScale(getSize());
+	}
 
 	private void paintContents(Graphics2D g2, Dimension size) {
 		if ( cellsShape == null ){

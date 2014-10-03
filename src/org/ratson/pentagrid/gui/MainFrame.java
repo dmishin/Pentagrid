@@ -2,10 +2,12 @@ package org.ratson.pentagrid.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -18,6 +20,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import javax.imageio.ImageIO;
+import javax.management.RuntimeErrorException;
 import javax.swing.Box;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -57,6 +60,8 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	private Settings settings = new Settings();
 	private JLabel lblFieldInfo, lblLocationInfo;
 	private WaypointNavigator waypointNavigator=new WaypointNavigator();
+	protected Point dragOrigin=null;
+	protected Point lastDragPoint=null;
 
 	class WaypointNavigator{
 		ArrayList<Path> waypoints = new ArrayList<Path>();
@@ -147,18 +152,26 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				case 'p':
 					waypointNavigator.previous();
 					break;
+				case 'a':
+					doExportAnimation();
+					break;
+				case 'm':
+					doExportAnimationMovement();
+					break;
 				}
 			}
 			
+
 			@Override
 			public void keyPressed(KeyEvent e) {
+				
 				switch( e.getKeyCode()){
-				case KeyEvent.VK_UP : panel.offsetView(0, -0.1); break;
-				case KeyEvent.VK_DOWN : panel.offsetView(0, 0.1); break;
-				case KeyEvent.VK_LEFT : panel.offsetView(0.1, 0); break;
-				case KeyEvent.VK_RIGHT : panel.offsetView(-0.1, 0); break;
-				case KeyEvent.VK_OPEN_BRACKET : panel.rotateView( -0.06); break;
-				case KeyEvent.VK_CLOSE_BRACKET : panel.rotateView( 0.06); break;
+				case KeyEvent.VK_UP : panel.offsetView(0, -settings.offsetVelocity); break;
+				case KeyEvent.VK_DOWN : panel.offsetView(0, settings.offsetVelocity); break;
+				case KeyEvent.VK_LEFT : panel.offsetView(settings.offsetVelocity, 0); break;
+				case KeyEvent.VK_RIGHT : panel.offsetView(-settings.offsetVelocity, 0); break;
+				case KeyEvent.VK_OPEN_BRACKET : panel.rotateView( -settings.rotationVelocity); break;
+				case KeyEvent.VK_CLOSE_BRACKET : panel.rotateView( settings.rotationVelocity); break;
 				case KeyEvent.VK_C : { panel.centerView(); break;}
 				case KeyEvent.VK_A : panel.antiAlias = ! panel.antiAlias; panel.repaint(); break;
 				case KeyEvent.VK_G : panel.showGrid = ! panel.showGrid; panel.repaint(); break;
@@ -166,7 +179,8 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				}
 			}
 		});
-		panel.addMouseListener(new MouseAdapter(){
+		
+		MouseAdapter listener = (new MouseAdapter(){
 			@Override
 			public void mousePressed(MouseEvent arg0) {
 				try{
@@ -178,15 +192,42 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 						}else{
 							System.err.println("Non-point");
 						}
+					}else if (arg0.getButton() == MouseEvent.BUTTON3 ){
+						System.out.println("Drag started");
+						lastDragPoint = dragOrigin = arg0.getPoint();
+						
 					}
 				}catch( Exception err ){
 					System.err.println("Error:"+err.getMessage());
 				}
-			}});
+			}
+			@Override
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				panel.rotateView( settings.rotationVelocity * e.getPreciseWheelRotation());
+			}
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				if (dragOrigin != null){
+					double scale = panel.getScale();
+					double dx = (e.getX() - lastDragPoint.getX()) / scale;
+					double dy = -(e.getY() - lastDragPoint.getY()) / scale;
+					lastDragPoint = e.getPoint();
+					panel.offsetView(dx, dy);
+				}
+			}
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				dragOrigin = null;
+			}
+			});
+		
 		panel.AddPoincarePanelListener( new PoincarePanelListener(){
 			public void originChanged(PoincarePanelEvent e) {
 				updateLocationInfo();
 			}});
+		panel.addMouseListener(listener);
+		panel.addMouseMotionListener(listener);
+		panel.addMouseWheelListener(listener);
 	}
 
 	/**Find clusters in the field, and set waypoints to them*/
@@ -327,21 +368,13 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	private JFileChooser fieldFileChooser = null;
 	private JFileChooser imageFileChooser = null;
 	private void doSaveImage() {
-		if ( imageFileChooser == null ){
-			imageFileChooser = new JFileChooser();
-			FileFilter filter = new FileNameExtensionFilter("PNG image (*.png)", "png");
-			imageFileChooser.addChoosableFileFilter( filter );
-			imageFileChooser.setFileFilter( filter );
-		}
-		
+		createImageChooser();
 		if (imageFileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = imageFileChooser.getSelectedFile();
             if ( ! file.getName().contains("."))
             	file = new File( file.getParentFile(), file.getName()+".png");
             try {
-            	int s = settings.exportImageSize;
-				ImageIO.write( panel.exportImage(new Dimension(s, s), settings.exportAntiAlias ),
-						"PNG", file);
+            	this.saveFieldImageAs(file);
 			} catch (IOException err) {
 				JOptionPane.showMessageDialog(this, err.getMessage(), "Can not save file", JOptionPane.ERROR_MESSAGE);
 			}
@@ -409,5 +442,128 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		world = newWorld;
 		panel.setField( newWorld );
 		updateFieldInfo();
+	}
+
+	private void createImageChooser(){
+		if ( imageFileChooser == null ){
+			imageFileChooser = new JFileChooser();
+			FileFilter filter = new FileNameExtensionFilter("PNG image (*.png)", "png");
+			imageFileChooser.addChoosableFileFilter( filter );
+			imageFileChooser.setFileFilter( filter );
+		}
+		
+	}
+	private void doExportAnimation() {
+		createImageChooser();
+		if (imageFileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            try {
+                File file = imageFileChooser.getSelectedFile();
+                if ( ! file.getName().contains("."))
+                	file = new File( file.getParentFile(), file.getName()+".png");
+                
+                String sframes = JOptionPane.showInputDialog(this, "Enter numer of frames");
+                int nFrames = Integer.parseInt(sframes);
+                if (nFrames < 0 || nFrames > 10000)
+                	throw new RuntimeException("Incorrect number of frames");
+                
+                exportAnimation( file.getParentFile(), file.getName(),  nFrames);
+			} catch (IOException err) {
+				JOptionPane.showMessageDialog(this, err.getMessage(), "Can not save file", JOptionPane.ERROR_MESSAGE);
+			} catch (Exception err){
+				JOptionPane.showMessageDialog(this, err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);				
+			}
+		}
+	}
+	
+	private void doExportAnimationMovement() {
+		createImageChooser();
+		if (imageFileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            try {
+                File file = imageFileChooser.getSelectedFile();
+                if ( ! file.getName().contains("."))
+                	file = new File( file.getParentFile(), file.getName()+".png");
+                
+                int nFrames = Integer.parseInt(JOptionPane.showInputDialog(this, "Enter numer of steps"));
+                int nFramesPerGen = Integer.parseInt(JOptionPane.showInputDialog(this, "Enter number of frames per generation"));
+                double nOffsetPerGen = Double.parseDouble(JOptionPane.showInputDialog(this, "Enter offset per generation"));
+                
+                
+                if (nFrames < 0 || nFrames > 10000)
+                	throw new RuntimeException("Incorrect number of frames");
+                
+                exportAnimationMovement( file.getParentFile(), file.getName(),  nFrames, nFramesPerGen, nOffsetPerGen*1.061275061905); //this constant is length of the pentagon side
+			} catch (IOException err) {
+				JOptionPane.showMessageDialog(this, err.getMessage(), "Can not save file", JOptionPane.ERROR_MESSAGE);
+			} catch (Exception err){
+				JOptionPane.showMessageDialog(this, err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);				
+			}
+		}
+	}
+	
+	private void exportAnimationMovement(File folder, String name,
+			int nFrames, int nFramesPerGen, double nOffsetPerGen) throws IOException {
+		int dotPos = name.lastIndexOf('.');
+		
+		String baseName=null, ext=null;
+		
+		if (dotPos != -1){
+			baseName = name.substring(0, dotPos);
+			ext = name.substring(dotPos);
+		}else{
+			baseName = name;
+			ext="";
+		}
+		
+		int frame = 0;
+		
+		for(int generation=0; generation< nFrames; ++generation){
+			for(int iSubFrame=0; iSubFrame<nFramesPerGen; ++iSubFrame, ++frame){
+				File frameFile = new File(folder, baseName + String.format("%04d", frame) + ext);
+				System.err.println("Writing "+frameFile);
+				saveFieldImageAs( frameFile );
+				
+				panel.offsetView(0, nOffsetPerGen/nFramesPerGen);
+				panel.update();			
+			}
+			world.evaluate( rule );
+			updateFieldInfo();
+			panel.update();			
+		}
+		
+	}
+	private void exportAnimation(File folder, String name, int nFrames) throws IOException {
+		int dotPos = name.lastIndexOf('.');
+		String baseName=null, ext=null;
+		if (dotPos != -1){
+			baseName = name.substring(0, dotPos);
+			ext = name.substring(dotPos);
+		}else{
+			baseName = name;
+			ext="";
+		}
+		for(int frame=0; frame < nFrames; ++frame){
+			File frameFile = new File(folder, baseName + String.format("%04d", frame) + ext);
+			System.err.println("Writing "+frameFile);
+			saveFieldImageAs( frameFile );
+			
+			world.evaluate( rule );
+			updateFieldInfo();
+			panel.update();			
+		}
+	}
+	
+	private void saveFieldImageAs(File f) throws IOException{
+		int dotPos = f.getName().lastIndexOf('.');
+		String format;
+		if (dotPos == -1){
+			format="PNG";
+		}else{
+			format = f.getName().substring(dotPos+1).toUpperCase();
+		}
+		
+    	int s = settings.exportImageSize;
+		ImageIO.write( panel.exportImage(new Dimension(s, s), settings.exportAntiAlias ),
+				format, f);
+		
 	}
 }
