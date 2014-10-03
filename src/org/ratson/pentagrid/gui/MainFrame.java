@@ -20,7 +20,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import javax.imageio.ImageIO;
-import javax.management.RuntimeErrorException;
 import javax.swing.Box;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -87,6 +86,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 	private void createUI(){
 		 Box topBox = Box.createVerticalBox();
 		 panel = new FarPoincarePanel( world );
+		 panel.setToolTipText("Cursor keys or drag with right button to move, [space] for next step, [x] to set rule");
 		 lblFieldInfo =  new JLabel();
 		 lblLocationInfo = new JLabel();
 		 topBox.add( lblFieldInfo );
@@ -99,7 +99,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 		panel.setOrigin( new OrientedPath(path, 0));
 	}
 	private void updateFieldInfo(){
-		String infoStr = String.format("Population:%d State:%d Rule:%s", world.population(), world.getFieldState(), rule);
+		String infoStr = String.format("Population:%d Background:%d Rule:%s", world.population(), world.getFieldState(), rule);
 		lblFieldInfo.setText( infoStr );
 	}
 	private void updateLocationInfo(){
@@ -152,7 +152,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 				case 'p':
 					waypointNavigator.previous();
 					break;
-				case 'a':
+				case 'n':
 					doExportAnimation();
 					break;
 				case 'm':

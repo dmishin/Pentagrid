@@ -42,6 +42,9 @@ For now, there is no GUI controls, only hotkeys are used.
 * l - load field
 * e - export current view as PNG image
 * t - edit settings (for now, only "Export image size" option is working)
+* n - export multiple frames (animation). Several files with numeric indices are generated.
+* m - export multiple frames with offset. Useful for making smooth animations of moving spaceships. Allows to specify total number of gernations, number of frames per generation and amount of vertical offset (in pentagon side lengths).
+
 	   
 Rules
 -----
@@ -55,9 +58,9 @@ Rules are specified in the standard B/S notation. For example, "B3/S23" describe
 To denote 10 alive neighbors, use letter "a". Rule strings are case-insensitive, "/" is optional. 
 
 Generally, rules containing B0 can not be simulated by this program since they produce infinite amounts of alive cells.
-The only exception are the *Day/Night class* rules, which have B0, but not have Sa. In such rules, empty space changes to filled space,
+The only exception are the *Strobing* rules, which have B0, but not have Sa. In such rules, empty space changes to filled space,
 and filled space changes to empty space back. This allows to represent such rules as combination of 2 normal rules.
-Interestingly, there are rules in this class, that support gliders and not explosive. 
+Interestingly, there are rules in this class, that [support gliders and not explosive](http://dmishin.blogspot.com/2014/10/cellular-automata-on-hyperbolic-54.html).
 
 Technical characteristics
 -------------------------
@@ -69,5 +72,5 @@ Supports infinite-sized field!
 
 Compilation
 -----------
-Depends on Google GSON library, used for data serializaiton. 
+Depends on the Google GSON library, used for data serializaiton. 
 From it, only google-gson-stream library is needed (object mapper is not used).
