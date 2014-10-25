@@ -2,7 +2,7 @@ package org.ratson.pentagrid;
 
 import java.io.Serializable;
 
-public class DayNightRule implements TotalisticRule, Serializable {
+public class StrobingRule implements TotalisticRule, Serializable {
 	private static final long serialVersionUID = 1L;
 	private Rule baseRule;
 	private Rule[] subRules;
@@ -12,7 +12,7 @@ public class DayNightRule implements TotalisticRule, Serializable {
 		return subRules[ worldState ].nextState( 0, prevState, numNeighbores);
 	}
 	
-	public DayNightRule( Rule baseRule ){
+	public StrobingRule( Rule baseRule ){
 		assert baseRule.isValidDayNight();
 		this.baseRule = baseRule;
 		subRules = new Rule[]{ 
@@ -22,7 +22,7 @@ public class DayNightRule implements TotalisticRule, Serializable {
 
 	@Override
 	public String toString() {
-		return "DayNight{"+baseRule+"}";  
+		return "Strobing{"+baseRule+"}";  
 	}
 	public boolean isValidRule(){
 		return subRules[0].isVacuumStable() && subRules[1].isVacuumStable();

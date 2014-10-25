@@ -3,7 +3,7 @@ package org.ratson.pentagrid.json;
 import java.io.IOException;
 import java.util.LinkedList;
 
-import org.ratson.pentagrid.DayNightRule;
+import org.ratson.pentagrid.StrobingRule;
 import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.Path;
 import org.ratson.pentagrid.Rule;
@@ -38,8 +38,8 @@ public class GSONSerializer {
 	private static void writeRule( JsonWriter jg, TotalisticRule rule) throws IOException {
 		if (rule instanceof Rule) 
 			writeSimpleRule( jg, (Rule)rule );
-		else if (rule instanceof DayNightRule)
-			writeSimpleRule( jg, ((DayNightRule)rule).getUnderlyingRule());
+		else if (rule instanceof StrobingRule)
+			writeSimpleRule( jg, ((StrobingRule)rule).getUnderlyingRule());
 		else throw new RuntimeException("Rule type is not supproted by serializer");
 	}
 	private static void writeSimpleRule(JsonWriter jg, Rule rule) throws IOException {
@@ -164,7 +164,7 @@ public class GSONSerializer {
 			Rule r = Rule.parseRule( code );
 			if (!r.isVacuumStable()){
 				if (r.isValidDayNight())
-					return new DayNightRule( r );
+					return new StrobingRule( r );
 				System.err.println("Warning: rule "+code+" is invalid. Loading anyways.");
 			}
 			return r;

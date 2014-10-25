@@ -30,7 +30,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.ratson.pentagrid.Clusterizer;
-import org.ratson.pentagrid.DayNightRule;
+import org.ratson.pentagrid.StrobingRule;
 import org.ratson.pentagrid.Field;
 import org.ratson.pentagrid.OrientedPath;
 import org.ratson.pentagrid.Path;
@@ -284,7 +284,7 @@ public class MainFrame extends JFrame implements NotificationReceiver {
 			setRule( parsed );
 		}else{
 			if ( parsed.isValidDayNight() ){
-				DayNightRule converted = new DayNightRule(parsed);
+				StrobingRule converted = new StrobingRule(parsed);
 				System.out.println( "Converting Day/Night rule "+parsed+" to the pair of stable rules:"+ converted);
 				assert( converted.isValidRule() );
 				setRule(converted);
